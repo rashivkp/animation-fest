@@ -1,9 +1,74 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Fest</title>
-</head>
-<body>
-  Home page
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="main" role="main">
+  <div class="container">
+    <span class="col-md-1">&nbsp;</span>
+    <div class="col-md-5">
+      <blockquote class="blockquote-reverse">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+        <footer>Someone famous in <cite title="Source Title">Source Title</cite></footer>
+      </blockquote>
+    </div>
+
+    <div class="col-md-5">
+      <div class="login">
+        <form action="" method="post">
+          <div class="input-group">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+            <input type="text" class="form-control" placeholder="Username">
+          </div>
+          <br>
+          <div class="input-group">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+            <input type="password" class="form-control" placeholder="Password">
+          </div>
+          <br>
+          <button class="btn btn-primary" value="Login">Login</button>
+          <button class="btn btn-secondary" value="Sign Up">Sign Up</button>
+        </form>
+      </div>
+    </div>
+    <span class="col-md-1">&nbsp;</span>
+
+  </div>
+</section>
+
+<section class="">
+  <div class="container">
+    <ul class="recent-news list-unstyled">
+      <li class="col-md-6">
+      <h4>Rashi Posted On ComputerScience</h4>
+      <p class="content">Angularjs can be used to create Single Page Application(SPA).  it is used by all major websites.
+      it allows loading of pages without refreshing entire page.
+      we don't have to write our own DOM management scripts.</p>
+      <p class="date">12:30pm 4-5-2013</p>
+      </li>
+      <li class="col-md-6">
+      <h4>Rakesh Asked On ComputerScience</h4>
+      <p class="content">
+      These selectors can help you apply styling in a contextual way. Perhaps you have a bunch of articles on a
+      site. Most of them start with elements and it looks great. But some of them start with a  which
+      have top and bottom margin on your site to look good within an article. But when they start an article
+      it causes an awkward gap. The latter selector above would zero out that top margin when it begins an
+      article (immediately succeeds a title)
+      we don't have to write our own DOM management scripts.</p>
+      <p class="date">12:30pm 4-5-2013</p>
+      </li>
+      <li class="col-md-6">
+      <h4>Abhilash Answered On ComputerScience</h4>
+      <p class="content">Angularjs can be used to create Single Page Application(SPA).  it is used by all major websites.
+      it allows loading of pages without refreshing entire page.
+      we don't have to write our own DOM management scripts.</p>
+      <p class="date">12:30pm 4-5-2013</p>
+      </li>
+      <li class="col-md-6">
+      <h4>Arun Added a Tutorial</h4>
+      <p class="content">Angularjs can be used to create Single Page Application(SPA).  it is used by all major websites.
+      we don't have to write our own DOM management scripts.</p>
+      <p class="date">12:30pm 4-5-2013</p>
+      </li>
+    </ul>
+  </div>
+</section>
+{% endblock %}

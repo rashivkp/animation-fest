@@ -1,9 +1,31 @@
-{% for item in items %}
-<h2>{{ item.category }} {{ item.name }}</h2>
-<ul>
-  {% for student in item.student_set.all %}
-  <li>{{ student.user.username }}</li>
-  {% endfor %}
-</ul>
-{% endfor %}
+{% extends 'base.html' %}
+{% load static from staticfiles %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'jrating/jRating.jquery.css' %}" type="text/css" />
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".rating").jRating();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{% for item in items %}
+<section class="main" role="main">
+  <div class="container">
+    <h2>{{ item.category }} {{ item.name }}</h2>
+    <ul class="">
+      {% for student in item.student_set.all %}
+      <li>{{ student.user.username }}
+      <div class="rating" data-student="{{ student.id }}" data-item="{{ item.id }}"></div></li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

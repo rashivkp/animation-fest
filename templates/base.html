@@ -1,0 +1,89 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animation Competition</title>
+
+    <!-- Bootstrap -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    {% block css %}
+    {% endblock %}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js' %}"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js' %}"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="heading">
+        <div class="container">
+          <nav class="navbar">
+            <ul class="center-block nav nav-pills-1">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Team</a></li>
+              <li><a href="#">Purpose</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </nav>
+        </div>
+
+      </header>
+
+      {% block content %}
+      {% endblock %}
+
+      <footer class="page-footer">
+        <div class="container">
+            <div class="col-sm-3"><h3> IAS Training</h3><p> Project of Collegeative Education, Kerala</p></div>
+            <ul class="list-unstyled">
+            <li class='col-sm-3'>
+            <h5><strong>Links</strong></h5>
+              <ul class="list-unstyled">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Team</a></li>
+                <li><a href="#">Purpose</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </li>
+            <li class='col-sm-3'>
+            <h5><strong>Social Networking</strong></h5>
+              <ul class="list-unstyled">
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Thumblr</a></li>
+              </ul>
+            </li>
+            <li class='col-sm-3'>
+            <h5><strong>Team</strong></h5>
+              <ul class="list-unstyled">
+                <li><a href="#">Arun K</a></li>
+                <li><a href="#">Mohamed Rashid</a></li>
+                <li><a href="#">PreethiShinu</a></li>
+                <li><a href="#">Rakesh PD</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="row text-center">&copy;2014 c4s</dev>
+      </footer>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
+    {% block js %}
+    {% endblock %}
+  </body>
+</html>
