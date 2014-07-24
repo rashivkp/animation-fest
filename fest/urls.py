@@ -10,7 +10,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^$', home, name='home'),
-    url(r'^items/$', items, name='items'),
+    url(r'^score/$', items, name='items'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),
     url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),

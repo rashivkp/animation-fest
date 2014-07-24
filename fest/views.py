@@ -8,12 +8,25 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.template.response import TemplateResponse
 from django.contrib.auth import login
+from django.core.exceptions import ObjectDoesNotExist
 
 @login_required
 def items(request):
-    items = Item.objects.all()
-    return render_to_response('itemlist.html', { 'items': items, 'user':
-        request.user})
+    items = []
+    for item in Item.objects.all():
+        studentlist = {'item': item, 'scores':[] }
+        for student in Student.objects.filter(items__in=Item.objects.filter(pk=item.id)):
+            try:
+                score = Score.objects.get(scored_by=request.user, item=item,
+                    student=student).mark
+                print score
+            except ObjectDoesNotExist:
+                score = 0
+            studentlist['scores'].append({'student': student, 'score': score})
+        items.append(studentlist)
+
+    return render_to_response('itemlist.html', { 'user': request.user,
+        'items': items})
 
 @csrf_exempt
 @login_required
@@ -22,11 +35,14 @@ def rateMe(request):
         student = Student.objects.get(pk=request.POST.get('idStudent', False))
         item = Item.objects.get(pk=request.POST.get('idItem', False))
         if student and item:
-            score, created = Score.objects.get_or_create(scored_by=request.user,
-                    student=student, item=item, mark=request.POST.get('rate'))
-            if created:
-                return HttpResponse('success')
-        return HttpResponseForbidden()
+            try:
+                score = Score.objects.get(scored_by=request.user, student=student, item=item)
+                score.mark = request.POST.get('rate', 0)
+                score.save()
+            except ObjectDoesNotExist:
+                score, created = Score.objects.get_or_create(scored_by=request.user,
+                    student=student, item=item, mark=request.POST.get('rate', 0))
+            return HttpResponse('success')
 
 @csrf_protect
 def home(request, template_name='index.html', authentication_form=AuthenticationForm):
@@ -38,7 +54,7 @@ def home(request, template_name='index.html', authentication_form=Authentication
             # Okay, security check complete. Log the user in.
             login(request, form.get_user())
 
-            return HttpResponseRedirect('/items/')
+            return HttpResponseRedirect('/score/')
     elif request.user.is_authenticated():
         return TemplateResponse(request, template_name, {'user': request.user})
     else:
