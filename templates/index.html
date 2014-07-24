@@ -14,14 +14,15 @@
     <div class="col-md-5">
       <div class="login">
         <form action="" method="post">
+          {% csrf_token %}
           <div class="input-group">
             <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
-            <input type="text" class="form-control" placeholder="Username">
+            <input type="text" class="form-control" placeholder="Username" name="username" id="id_username">
           </div>
           <br>
           <div class="input-group">
             <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-            <input type="password" class="form-control" placeholder="Password">
+            <input type="password" class="form-control" placeholder="Password" name="password" id="id_password">
           </div>
           <br>
           <button class="btn btn-primary" value="Login">Login</button>
