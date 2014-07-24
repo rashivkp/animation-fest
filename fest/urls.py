@@ -4,7 +4,8 @@ from django.conf import settings
 from django.views.generic import TemplateView
 
 from fest.views import items, rateMe, home
-from django.contrib import admin
+from django.contrib import admin, auth
+from django.contrib.auth.views import logout
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -12,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^items/$', items, name='items'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),
+    url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
 )
 
 if settings.DEBUG and settings.MEDIA_ROOT:

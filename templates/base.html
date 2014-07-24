@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% load url from future %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -32,6 +33,9 @@
               <li><a href="#">Team</a></li>
               <li><a href="#">Purpose</a></li>
               <li><a href="#">Contact</a></li>
+              {% if user.is_authenticated %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+              {% endif %}
             </ul>
           </nav>
         </div>
