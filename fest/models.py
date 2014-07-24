@@ -27,11 +27,17 @@ class Score(models.Model):
     student = models.ForeignKey(Student)
     item = models.ForeignKey(Item)
     mark = models.IntegerField()
+    is_student = models.BooleanField(default=True)
     class Meta:
         unique_together = ('scored_by', 'student', 'item')
 
-    def is_student(self):
-        return hasattr(self.scored_by, 'student')
+class JourieScore(Score):
+    class Meta:
+        proxy = True
+
+    def __init__(self, *args, **kwargs):
+        super(Score, self).__init__(*args, **kwargs)
+        self.is_student = False
 
 class Result(models.Model):
     item = models.ForeignKey(Item)
