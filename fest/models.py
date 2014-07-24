@@ -30,6 +30,9 @@ class Score(models.Model):
     class Meta:
         unique_together = ('scored_by', 'student', 'item')
 
+    def is_student(self):
+        return hasattr(self.scored_by, 'student')
+
 class Result(models.Model):
     item = models.ForeignKey(Item)
     student = models.ForeignKey(Student)

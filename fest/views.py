@@ -4,7 +4,7 @@ import json
 from django.core import serializers
 from fest.models import *
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.template.response import TemplateResponse
 from django.contrib.auth import login
@@ -19,7 +19,6 @@ def items(request):
             try:
                 score = Score.objects.get(scored_by=request.user, item=item,
                     student=student).mark
-                print score
             except ObjectDoesNotExist:
                 score = 0
             studentlist['scores'].append({'student': student, 'score': score})
@@ -30,6 +29,7 @@ def items(request):
 
 @csrf_exempt
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'student'))
 def rateMe(request):
     if request.method == 'POST':
         student = Student.objects.get(pk=request.POST.get('idStudent', False))
@@ -50,10 +50,8 @@ def home(request, template_name='index.html', authentication_form=Authentication
     if request.method == "POST":
         form = authentication_form(request, data=request.POST)
         if form.is_valid():
-
             # Okay, security check complete. Log the user in.
             login(request, form.get_user())
-
             return HttpResponseRedirect('/score/')
     elif request.user.is_authenticated():
         return TemplateResponse(request, template_name, {'user': request.user})
@@ -64,3 +62,4 @@ def home(request, template_name='index.html', authentication_form=Authentication
         'form': form,
     }
     return TemplateResponse(request, template_name, context)
+
