@@ -22,6 +22,14 @@ class Student(models.Model):
     def __unicode__(self):
         return "%s" % (self.user.username)
 
+class Jourie(models.Model):
+    user = models.OneToOneField(User)
+    bio = models.TextField(blank=True, null=True)
+    items = models.ManyToManyField(Item)
+
+    def __unicode__(self):
+        return "%s" % (self.user.username)
+
 class Score(models.Model):
     scored_by = models.ForeignKey(User)
     student = models.ForeignKey(Student)

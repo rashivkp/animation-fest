@@ -6,6 +6,7 @@ from django.contrib.auth.models import User, Group
 from models import *
 
 admin.site.register(Student)
+admin.site.register(Jourie)
 admin.site.register(Score)
 admin.site.register(Result)
 admin.site.register(Item)
