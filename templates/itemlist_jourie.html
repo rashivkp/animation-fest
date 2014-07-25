@@ -9,22 +9,32 @@
 <script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".rating").jRating({length: 10, rateMax:75, canRateAgain : true, nbRates : 3});
+    $(".rating.disabled").jRating({isDisabled:true});
+    $(".rating.enabled").jRating({length: 10, rateMax:75, canRateAgain : true, nbRates : 3});
 });
 </script>
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 {% for item in items %}
 <section class="main" role="main">
   <div class="container">
     <h2>{{ item.item.category }} {{ item.item.name }}</h2>
     <ul class="">
+    {% if item.item.is_confirmed %}
       {% for score in item.scores %}
       <li>{{ score.student.user.username }}
-      <div class="rating" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
+      <div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
         data-item="{{ item.item.id }}"></div></li>
       {% endfor %}
+    {% else %}
+      {% for score in item.scores %}
+      <li>{{ score.student.user.username }}
+      <div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
+        data-item="{{ item.item.id }}"></div></li>
+      {% endfor %}
+    {% endif %}
     </ul>
   </div>
 </section>

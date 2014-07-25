@@ -21,6 +21,7 @@ def is_admin(user):
     return user.groups.filter(name='Admin').count() == 1
 
 @login_required
+@csrf_protect
 @user_passes_test(can_rate, login_url='/')
 def score(request):
     items = []
@@ -40,16 +41,20 @@ def score(request):
         items.append(studentlist)
 
     if request.user.groups.filter(name__icontains='Jourie').exists():
-        return render_to_response('itemlist_jourie.html', { 'user': request.user, 'items': items})
+        return render_to_response('itemlist_jourie.html', { 'user': request.user,
+            'items': items}, context_instance=RequestContext(request))
     elif hasattr(request.user, 'student'):
-        return render_to_response('itemlist.html', { 'user': request.user, 'items': items})
+        return render_to_response('itemlist.html', { 'user': request.user,
+            'items': items}, context_instance=RequestContext(request))
 
-@csrf_exempt
+@csrf_protect
 @login_required
 def rateMe(request):
     if request.method == 'POST':
         student = Student.objects.get(pk=request.POST.get('idStudent', False))
         item = Item.objects.get(pk=request.POST.get('idItem', False))
+        if item.is_confirmed:
+            return HttpResponseForbidden()
         if student and item:
             try:
                 score = Score.objects.get(scored_by=request.user, student=student, item=item)

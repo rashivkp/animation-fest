@@ -61,6 +61,7 @@
 			var average = parseFloat($(this).attr('data-average')), // get the average of all rates
 			idItem = parseInt($(this).attr('data-item')), // get the id of the box
 			idStudent = parseInt($(this).attr('data-student')), // get the id of the box
+			csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value'), // get the id of the box
 			widthRatingContainer = starWidth*opts.length, // Width of the Container
 			widthColor = average/opts.rateMax*widthRatingContainer, // Width of the color Container
 
@@ -160,7 +161,8 @@
 								idItem: idItem,
 								idStudent: idStudent,
 								rate : rate,
-								action : 'rating'
+								action : 'rating',
+                                csrfmiddlewaretoken : csrf_token
 							},
 							function(data) {
 								if(!data.error)
