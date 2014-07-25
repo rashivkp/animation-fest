@@ -10,7 +10,13 @@ from django.template.response import TemplateResponse
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 
+def can_rate(user):
+    if not hasattr(user, 'student'):
+        return user.groups.filter(name='Jourie').count() == 1
+    return True
+
 @login_required
+@user_passes_test(can_rate, login_url='/')
 def score(request):
     items = []
     for item in Item.objects.all():
@@ -26,7 +32,7 @@ def score(request):
 
     if request.user.groups.filter(name__icontains='Jourie').exists():
         return render_to_response('itemlist_jourie.html', { 'user': request.user, 'items': items})
-    else:
+    elif hasattr(request.user, 'student'):
         return render_to_response('itemlist.html', { 'user': request.user, 'items': items})
 
 @csrf_exempt
@@ -41,8 +47,13 @@ def rateMe(request):
                 score.mark = request.POST.get('rate', 0)
                 score.save()
             except ObjectDoesNotExist:
-                Score.objects.create(scored_by=request.user,
-                    student=student, item=item, mark=request.POST.get('rate', 0))
+                if request.user.groups.filter(name='Jourie').count():
+                    Score.objects.create(scored_by=request.user,
+                        student=student, item=item,
+                        mark=request.POST.get('rate', 0), is_student=False)
+                else:
+                    Score.objects.create(scored_by=request.user,
+                        student=student, item=item, mark=request.POST.get('rate', 0))
         return HttpResponse('success')
 
 @csrf_protect
