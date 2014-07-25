@@ -9,11 +9,15 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.template.response import TemplateResponse
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Avg
 
 def can_rate(user):
     if not hasattr(user, 'student'):
         return user.groups.filter(name='Jourie').count() == 1
     return True
+
+def is_admin(user):
+    return user.groups.filter(name='Admin').count() == 1
 
 @login_required
 @user_passes_test(can_rate, login_url='/')
@@ -75,3 +79,16 @@ def home(request, template_name='index.html', authentication_form=Authentication
     }
     return TemplateResponse(request, template_name, context)
 
+@login_required
+@user_passes_test(is_admin, login_url='/')
+def report(request):
+    items = []
+    for item in Item.objects.all():
+        studentlist = {'item': item, 'scores':[] }
+        for student in item.student_set.all():
+            student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+            jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+            studentlist['scores'].append({ 'student': student, 'student_mark': student_mark, 'jourie_mark': jourie_mark})
+        items.append(studentlist)
+
+    return render_to_response('report.html', { 'user': request.user, 'items': items})
