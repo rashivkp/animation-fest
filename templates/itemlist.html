@@ -22,21 +22,25 @@ $(document).ready(function(){
 <section class="main" role="main">
   <div class="container">
     <h2>{{ item.item.category }} {{ item.item.name }}</h2>
-    <ul class="">
+    <table class="table">
     {% if item.item.is_confirmed %}
       {% for score in item.scores %}
-      <li>{{ score.student.user.username }}
-      <div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
-        data-item="{{ item.item.id }}"></div></li>
+      <tr>
+      <td>{{ score.student.user.username }}</td>
+      <td> <div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
+        data-item="{{ item.item.id }}"></div></td>
+      </tr>
       {% endfor %}
     {% else %}
       {% for score in item.scores %}
-      <li>{{ score.student.user.username }}
-      <div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
-        data-item="{{ item.item.id }}"></div></li>
+      <tr>
+      <td>{{ score.student.user.username }}</td>
+      <td> <div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
+        data-item="{{ item.item.id }}"></div></td>
+      </tr>
       {% endfor %}
     {% endif %}
-    </ul>
+    </table>
   </div>
 </section>
 {% endfor %}

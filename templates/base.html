@@ -28,12 +28,11 @@
         <div class="container">
           <nav class="navbar">
             <ul class="center-block nav nav-pills-1">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Team</a></li>
-              <li><a href="#">Purpose</a></li>
+              <li class="active"><a href="/">Home</a></li>
               <li><a href="#">Contact</a></li>
+              <li><a href="#">Upcoming Events</a></li>
               {% if user.is_authenticated %}
+                <li><a href="/score">Score</a></li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
               {% endif %}
             </ul>
@@ -47,8 +46,8 @@
 
       <footer class="page-footer">
         <div class="container">
-            <div class="col-sm-3"><h3> IAS Training</h3><p> Project of Collegeative Education, Kerala</p></div>
-            <ul class="list-unstyled">
+          <div class="col-sm-3"><h3>Animation Competition</h3><p>Project of Collegeative Education, Kerala</p></div>
+          <ul class="list-unstyled">
             <li class='col-sm-3'>
             <h5><strong>Links</strong></h5>
               <ul class="list-unstyled">
