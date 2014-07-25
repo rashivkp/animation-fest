@@ -23,7 +23,11 @@ def is_admin(user):
 @user_passes_test(can_rate, login_url='/')
 def score(request):
     items = []
-    for item in Item.objects.all():
+    if request.user.groups.filter(name__icontains='Jourie').exists():
+        item_list = request.user.jourie.items.all()
+    else:
+        item_list = Item.objects.all()
+    for item in item_list:
         studentlist = {'item': item, 'scores':[] }
         for student in Student.objects.filter(items__in=Item.objects.filter(pk=item.id)):
             try:
