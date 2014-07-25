@@ -80,7 +80,12 @@ def home(request, template_name='index.html', authentication_form=Authentication
             login(request, form.get_user())
             return HttpResponseRedirect('/score/')
     elif request.user.is_authenticated():
-        return TemplateResponse(request, template_name, {'user': request.user})
+        results = []
+        for item in Item.objects.filter(is_result_published=True):
+            result = Result.objects.filter(item=item).order_by('-score')[:5]
+            results.append({'result': result, 'item':item})
+        return TemplateResponse(request, template_name, {'user': request.user,
+            'results': results})
     else:
         form = authentication_form(request)
 

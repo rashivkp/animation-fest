@@ -39,6 +39,23 @@
 
 <section class="">
   <div class="container">
+    {% for item in results %}
+      <h2>{{ item.item.category }} {{ item.item.name }}</h2>
+      <table class="table">
+        <tr>
+          <th>Rank</th>
+          <th>Student</th>
+          <th>School</th>
+        </tr>
+        {% for r in item.result %}
+        <tr>
+          <td>{{ forloop.counter0|add:'1' }}</td>
+          <td>{{ r.student.user.username }}</td>
+          <td>{{ r.student.school }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    {% endfor %}
     <ul class="recent-news list-unstyled">
       <li class="col-md-6">
       <h4>Rashi Posted On ComputerScience</h4>
