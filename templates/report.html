@@ -9,14 +9,30 @@
 <script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".confirm_result").click(function(){
-      $.post( "/confirmresult/",
-        { 'item':parseInt($(this).attr('data-item')), csrfmiddlewaretoken: '{{ csrf_token }}' },
-        function() {
-          $(this).html('Publish Result')
-          $.prop('class', 'btn btn-warning');
-        });
-    }); });
+  $(".confirm_result").click(function(){
+    var item = parseInt($(this).attr('data-item'))
+    var self = this;
+    $.post(
+      "/confirmresult/",
+      {'item':item,
+      csrfmiddlewaretoken: '{{ csrf_token }}' },
+      function(data) {
+        $(self).remove()
+        $('.publish_result.publish_result'+item).removeClass('hide')
+      });
+  });
+  $(".publish_result").click(function(){
+    var self = this;
+    $.post(
+      "/publishresult/",
+      {'item':parseInt($(this).attr('data-item')),
+      csrfmiddlewaretoken: '{{ csrf_token }}' },
+      function(data) {
+        $(self).html('Result Published');
+        $(self).prop('class', 'btn btn-success disabled btn-xs');
+      });
+  });
+});
 </script>
 {% endblock %}
 
@@ -49,7 +65,14 @@ $(document).ready(function(){
       </tr>
       {% endfor %}
     </table>
+    {% if item.item.is_result_published %}
+    <button class="btn btn-success disabled btn-xs" data-item="{{ item.item.id }}">Result Published</button>
+    {% elif item.item.is_confirmed %}
+    <button class="btn btn-warning publish_result" data-item="{{ item.item.id }}">Publish Result</button>
+    {% else %}
     <button class="btn btn-primary confirm_result" data-item="{{ item.item.id }}">Confirm Result</button>
+    {% endif %}
+    <button class="btn btn-warning hide publish_result publish_result{{ item.item.id }}" data-item="{{ item.item.id }}">Publish Result</button>
   </div>
 </section>
 {% endfor %}

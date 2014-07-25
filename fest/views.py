@@ -115,6 +115,7 @@ def report(request):
             context_instance=RequestContext(request))
 
 @csrf_protect
+@login_required
 def confirm_result(request):
     if request.method == 'POST' and request.POST.get('item', False):
         item = Item.objects.get(pk=request.POST['item'])
@@ -126,4 +127,16 @@ def confirm_result(request):
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')
+        return HttpResponseForbidden()
+
+@csrf_protect
+@login_required
+def publish_result(request):
+    if request.method == 'POST' and request.POST.get('item', False):
+        item = Item.objects.get(pk=request.POST['item'])
+        if item.is_confirmed:
+            item.is_result_published = True
+            item.save()
+            return HttpResponse('success')
+
         return HttpResponseForbidden()
