@@ -153,11 +153,6 @@
 					var rate = getNote(newWidth);
 					average.width(newWidth);
 
-
-					/** ONLY FOR THE DEMO, YOU CAN REMOVE THIS CODE **/
-						console.log('<strong>idItem: </strong>'+idItem+'<br /><strong>idStudent : </strong>'+idStudent+'<br /><strong>rate : </strong>'+rate+'<br /><strong>action :</strong> rating');
-					/** END ONLY FOR THE DEMO **/
-
 					if(opts.onClick) opts.onClick( element, rate );
 
 					if(opts.sendRequest) {

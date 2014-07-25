@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.template.response import TemplateResponse
+from django.template import RequestContext
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
@@ -83,18 +84,41 @@ def home(request, template_name='index.html', authentication_form=Authentication
     }
     return TemplateResponse(request, template_name, context)
 
+@csrf_protect
 @login_required
 @user_passes_test(is_admin, login_url='/')
 def report(request):
     items = []
     for item in Item.objects.all():
-        studentlist = {'item': item, 'scores':[] }
+        studentlist = {'item': item, 'scores':[], 'jouries': item.jourie_set.all()}
         for student in item.student_set.all():
             student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
             jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            jourie_score = Score.objects.filter(is_student=False, student=student, item=item)
+            jourie_score = []
+            for jourie in item.jourie_set.all():
+                try:
+                    jourie_score.append(Score.objects.get(is_student=False,
+                        student=student, item=item, scored_by=jourie.user).mark)
+                except ObjectDoesNotExist:
+                    jourie_score.append('')
+            print jourie_score
             studentlist['scores'].append({ 'student':
                 student,'jourie_score':jourie_score, 'student_mark': student_mark, 'jourie_mark': jourie_mark})
         items.append(studentlist)
 
-    return render_to_response('report.html', { 'user': request.user, 'items': items})
+    return render_to_response('report.html', { 'user': request.user, 'items': items},
+            context_instance=RequestContext(request))
+
+@csrf_protect
+def confirm_result(request):
+    if request.method == 'POST' and request.POST.get('item', False):
+        item = Item.objects.get(pk=request.POST['item'])
+        if not item.is_confirmed:
+            for student in item.student_set.all():
+                student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+                jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+                Result.objects.create(item=item, student=student, score=int(student_mark+jourie_mark), special=False)
+            item.is_confirmed = True
+            item.save()
+            return HttpResponse('success')
+        return HttpResponseForbidden()

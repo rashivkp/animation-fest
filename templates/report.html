@@ -9,8 +9,14 @@
 <script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".rating").jRating({nbRates : 3});
-});
+    $(".confirm_result").click(function(){
+      $.post( "/confirmresult/",
+        { 'item':parseInt($(this).attr('data-item')), csrfmiddlewaretoken: '{{ csrf_token }}' },
+        function() {
+          $(this).html('Publish Result')
+          $.prop('class', 'btn btn-warning');
+        });
+    }); });
 </script>
 {% endblock %}
 
@@ -24,9 +30,9 @@ $(document).ready(function(){
         <th>Name</th>
         <th>Jourie Score</th>
         <th>Student Score</th>
-        <th>J1</th>
-        <th>J2</th>
-        <th>J3</th>
+        {% for jourie in item.jouries %}
+          <th>J{{ forloop.counter0|add:'1' }}</th>
+        {% endfor %}
       </tr>
       {% for score in item.scores %}
       <tr>
@@ -34,11 +40,16 @@ $(document).ready(function(){
         <td>{{ score.jourie_mark }}</td>
         <td>{{ score.student_mark }}</td>
         {% for mark in score.jourie_score %}
-          <td>{{ mark.mark }}</td>
+          {% if mark == '' %}
+          <td>&nbsp;</td>
+          {% else %}
+          <td>{{ mark }}</td>
+          {% endif %}
         {% endfor %}
       </tr>
       {% endfor %}
     </table>
+    <button class="btn btn-primary confirm_result" data-item="{{ item.item.id }}">Confirm Result</button>
   </div>
 </section>
 {% endfor %}

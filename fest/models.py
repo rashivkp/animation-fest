@@ -8,6 +8,7 @@ class Item(models.Model):
     name = models.CharField(max_length=64)
     category = models.CharField(max_length=8, choices=CATEGORY_CHOICES)
     is_result_published = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return '%s %s' % (self.category, self.name)
