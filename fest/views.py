@@ -88,7 +88,9 @@ def report(request):
         for student in item.student_set.all():
             student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
             jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            studentlist['scores'].append({ 'student': student, 'student_mark': student_mark, 'jourie_mark': jourie_mark})
+            jourie_score = Score.objects.filter(is_student=False, student=student, item=item)
+            studentlist['scores'].append({ 'student':
+                student,'jourie_score':jourie_score, 'student_mark': student_mark, 'jourie_mark': jourie_mark})
         items.append(studentlist)
 
     return render_to_response('report.html', { 'user': request.user, 'items': items})

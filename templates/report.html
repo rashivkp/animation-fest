@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static from staticfiles %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'jrating/jRating.jquery.css' %}" type="text/css" />
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".rating").jRating({nbRates : 3});
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{% for item in items %}
+<section class="main" role="main">
+  <div class="container">
+    <h2>{{ item.item.category }} {{ item.item.name }}</h2>
+    <table class="table">
+      <tr>
+        <th>Name</th>
+        <th>Jourie Score</th>
+        <th>Student Score</th>
+        <th>J1</th>
+        <th>J2</th>
+        <th>J3</th>
+      </tr>
+      {% for score in item.scores %}
+      <tr>
+        <td>{{ score.student.user.username }}</td>
+        <td>{{ score.jourie_mark }}</td>
+        <td>{{ score.student_mark }}</td>
+        {% for mark in score.jourie_score %}
+          <td>{{ mark.mark }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}
