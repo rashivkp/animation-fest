@@ -9,7 +9,7 @@
 <script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".rating").jRating({nbRates : 3});
+    $(".rating").jRating({length: 10, rateMax:75, canRateAgain : true, nbRates : 3});
 });
 </script>
 {% endblock %}

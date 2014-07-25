@@ -11,7 +11,7 @@ from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 
 @login_required
-def items(request):
+def score(request):
     items = []
     for item in Item.objects.all():
         studentlist = {'item': item, 'scores':[] }
@@ -24,12 +24,13 @@ def items(request):
             studentlist['scores'].append({'student': student, 'score': score})
         items.append(studentlist)
 
-    return render_to_response('itemlist.html', { 'user': request.user,
-        'items': items})
+    if request.user.groups.filter(name__icontains='Jourie').exists():
+        return render_to_response('itemlist_jourie.html', { 'user': request.user, 'items': items})
+    else:
+        return render_to_response('itemlist.html', { 'user': request.user, 'items': items})
 
 @csrf_exempt
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'student'))
 def rateMe(request):
     if request.method == 'POST':
         student = Student.objects.get(pk=request.POST.get('idStudent', False))
@@ -40,9 +41,9 @@ def rateMe(request):
                 score.mark = request.POST.get('rate', 0)
                 score.save()
             except ObjectDoesNotExist:
-                score, created = Score.objects.get_or_create(scored_by=request.user,
+                Score.objects.create(scored_by=request.user,
                     student=student, item=item, mark=request.POST.get('rate', 0))
-            return HttpResponse('success')
+        return HttpResponse('success')
 
 @csrf_protect
 def home(request, template_name='index.html', authentication_form=AuthenticationForm):
