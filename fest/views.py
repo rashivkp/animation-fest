@@ -75,15 +75,31 @@ def home(request, template_name='index.html', authentication_form=Authentication
 
     results = []
     for item in Item.objects.filter(is_result_published=True):
+        # generating result based student and jourie rating
         mark = -1
         rank = 0
-        result_list = []
-        for result in Result.objects.filter(item=item).order_by('-score')[:5]:
+        common_result = []
+        for result in item.result_set.all().order_by('-score'):
             if mark != result.score:
                 rank += 1
                 mark = result.score
-            result_list.append({'result':result, 'rank': rank})
-        results.append({'result_list':result_list , 'item':item})
+                if rank == 6:
+                    break
+            common_result.append({'result':result, 'rank': rank})
+
+        # generating result based student rating
+        student_result = []
+        mark = -1
+        rank = 0
+        for result in item.result_set.all().order_by('-student_score'):
+            if mark != result.score:
+                rank += 1
+                mark = result.score
+                if rank == 6:
+                    break
+            student_result.append({'result':result, 'rank': rank})
+        results.append({'common_result': common_result, 'item':item,
+            'student_result': student_result})
 
     if request.method == "POST":
         form = authentication_form(request, data=request.POST)
@@ -136,7 +152,8 @@ def confirm_result(request):
             for student in item.student_set.all():
                 student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
                 jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-                Result.objects.create(item=item, student=student, score=int(round(student_mark+jourie_mark)), special=False)
+                Result.objects.create(item=item, student=student,
+                        score=int(round(student_mark+jourie_mark)),student_score=student_mark, special=False)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')

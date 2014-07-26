@@ -52,5 +52,6 @@ class Result(models.Model):
     item = models.ForeignKey(Item)
     student = models.ForeignKey(Student)
     score = models.IntegerField()
+    student_score = models.FloatField(default=0)
     special = models.BooleanField(default=False)
     comment = models.TextField(blank=True, null=True)

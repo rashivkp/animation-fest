@@ -53,7 +53,28 @@
           <th>Student</th>
           <th>School</th>
         </tr>
-        {% for r in item.result_list %}
+        {% for r in item.common_result %}
+        <tr>
+          <td>{{ r.rank }}</td>
+          <td>{{ r.result.student.user.username }}</td>
+          <td>{{ r.result.student.school }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    {% endfor %}
+  </div>
+</section>
+<section class="">
+  <div class="container">
+    {% for item in results %}
+      <h2>{{ item.item.category }} {{ item.item.name }} - Result by Students Rating</h2>
+      <table class="table">
+        <tr>
+          <th>Rank</th>
+          <th>Student</th>
+          <th>School</th>
+        </tr>
+        {% for r in item.student_result %}
         <tr>
           <td>{{ r.rank }}</td>
           <td>{{ r.result.student.user.username }}</td>
