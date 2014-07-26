@@ -73,6 +73,18 @@ def rateMe(request):
 @csrf_protect
 def home(request, template_name='index.html', authentication_form=AuthenticationForm):
 
+    results = []
+    for item in Item.objects.filter(is_result_published=True):
+        mark = -1
+        rank = 0
+        result_list = []
+        for result in Result.objects.filter(item=item).order_by('-score')[:5]:
+            if mark != result.score:
+                rank += 1
+                mark = result.score
+            result_list.append({'result':result, 'rank': rank})
+        results.append({'result_list':result_list , 'item':item})
+
     if request.method == "POST":
         form = authentication_form(request, data=request.POST)
         if form.is_valid():
@@ -80,17 +92,13 @@ def home(request, template_name='index.html', authentication_form=Authentication
             login(request, form.get_user())
             return HttpResponseRedirect('/score/')
     elif request.user.is_authenticated():
-        results = []
-        for item in Item.objects.filter(is_result_published=True):
-            result = Result.objects.filter(item=item).order_by('-score')[:5]
-            results.append({'result': result, 'item':item})
         return TemplateResponse(request, template_name, {'user': request.user,
             'results': results})
     else:
         form = authentication_form(request)
 
     context = {
-        'form': form,
+        'form': form,'results': results,
     }
     return TemplateResponse(request, template_name, context)
 
@@ -111,9 +119,9 @@ def report(request):
                         student=student, item=item, scored_by=jourie.user).mark)
                 except ObjectDoesNotExist:
                     jourie_score.append('')
-            print jourie_score
             studentlist['scores'].append({ 'student':
-                student,'jourie_score':jourie_score, 'student_mark': student_mark, 'jourie_mark': jourie_mark})
+                student,'jourie_score':jourie_score, 'student_mark':
+                int(round(student_mark)), 'jourie_mark': int(round(jourie_mark))})
         items.append(studentlist)
 
     return render_to_response('report.html', { 'user': request.user, 'items': items},
@@ -128,7 +136,7 @@ def confirm_result(request):
             for student in item.student_set.all():
                 student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
                 jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-                Result.objects.create(item=item, student=student, score=int(student_mark+jourie_mark), special=False)
+                Result.objects.create(item=item, student=student, score=int(round(student_mark+jourie_mark)), special=False)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')

@@ -53,11 +53,11 @@
           <th>Student</th>
           <th>School</th>
         </tr>
-        {% for r in item.result %}
+        {% for r in item.result_list %}
         <tr>
-          <td>{{ forloop.counter0|add:'1' }}</td>
-          <td>{{ r.student.user.username }}</td>
-          <td>{{ r.student.school }}</td>
+          <td>{{ r.rank }}</td>
+          <td>{{ r.result.student.user.username }}</td>
+          <td>{{ r.result.student.school }}</td>
         </tr>
         {% endfor %}
       </table>
