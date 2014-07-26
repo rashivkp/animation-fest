@@ -30,7 +30,7 @@ class Student(models.Model):
     def __unicode__(self):
         return "%s" % (self.user.username)
 
-class Jourie(models.Model):
+class Jury(models.Model):
     user = models.OneToOneField(User)
     bio = models.TextField(blank=True, null=True)
     items = models.ManyToManyField(Item)
@@ -47,7 +47,7 @@ class Score(models.Model):
     class Meta:
         unique_together = ('scored_by', 'student', 'item')
 
-class JourieScore(Score):
+class JuryScore(Score):
     class Meta:
         proxy = True
 

@@ -14,7 +14,7 @@ from django.db.models import Avg
 
 def can_rate(user):
     if not hasattr(user, 'student'):
-        return user.groups.filter(name='Jourie').count() == 1
+        return user.groups.filter(name='Jury').count() == 1
     return True
 
 def is_admin(user):
@@ -25,8 +25,8 @@ def is_admin(user):
 @user_passes_test(can_rate, login_url='/')
 def score(request):
     items = []
-    if request.user.groups.filter(name__icontains='Jourie').exists():
-        item_list = request.user.jourie.items.all()
+    if request.user.groups.filter(name__icontains='Jury').exists():
+        item_list = request.user.jury.items.all()
     else:
         item_list = Item.objects.all()
     for item in item_list:
@@ -40,8 +40,8 @@ def score(request):
             studentlist['scores'].append({'student': student, 'score': score})
         items.append(studentlist)
 
-    if request.user.groups.filter(name__icontains='Jourie').exists():
-        return render_to_response('itemlist_jourie.html', { 'user': request.user,
+    if request.user.groups.filter(name__icontains='Jury').exists():
+        return render_to_response('itemlist_jury.html', { 'user': request.user,
             'items': items}, context_instance=RequestContext(request))
     elif hasattr(request.user, 'student'):
         return render_to_response('itemlist.html', { 'user': request.user,
@@ -61,7 +61,7 @@ def rateMe(request):
                 score.mark = request.POST.get('rate', 0)
                 score.save()
             except ObjectDoesNotExist:
-                if request.user.groups.filter(name='Jourie').count():
+                if request.user.groups.filter(name='Jury').count():
                     Score.objects.create(scored_by=request.user,
                         student=student, item=item,
                         mark=request.POST.get('rate', 0), is_student=False)
@@ -75,7 +75,7 @@ def home(request, template_name='index.html', authentication_form=Authentication
 
     results = []
     for item in Item.objects.filter(is_result_published=True):
-        # generating result based student and jourie rating
+        # generating result based student and jury rating
         mark = -1
         rank = 0
         common_result = []
@@ -124,20 +124,28 @@ def home(request, template_name='index.html', authentication_form=Authentication
 def report(request):
     items = []
     for item in Item.objects.all():
-        studentlist = {'item': item, 'scores':[], 'jouries': item.jourie_set.all()}
+        studentlist = {'item': item, 'scores':[], 'jurys': item.jury_set.all()}
         for student in item.student_set.all():
             student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            jourie_score = []
-            for jourie in item.jourie_set.all():
+            jury_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+            jury_score = []
+            for jury in item.jury_set.all():
                 try:
-                    jourie_score.append(Score.objects.get(is_student=False,
-                        student=student, item=item, scored_by=jourie.user).mark)
+                    jury_score.append(Score.objects.get(is_student=False,
+                        student=student, item=item, scored_by=jury.user).mark)
                 except ObjectDoesNotExist:
-                    jourie_score.append('')
-            studentlist['scores'].append({ 'student':
-                student,'jourie_score':jourie_score, 'student_mark':
-                int(round(student_mark)), 'jourie_mark': int(round(jourie_mark))})
+                    jury_score.append('')
+            if student_mark == None:
+                student_mark = '-'
+            else:
+                student_mark = int(round(student_mark))
+            if jury_mark == None:
+                jury_mark = '-'
+            else:
+                jury_mark = int(round(jury_mark))
+            studentlist['scores'].append({ 'student': student,'jury_score':jury_score,
+                'student_mark':student_mark,
+                'jury_mark': jury_mark})
         items.append(studentlist)
 
     return render_to_response('report.html', { 'user': request.user, 'items': items},
@@ -151,9 +159,9 @@ def confirm_result(request):
         if not item.is_confirmed:
             for student in item.student_set.all():
                 student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-                jourie_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+                jury_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
                 Result.objects.create(item=item, student=student,
-                        score=int(round(student_mark+jourie_mark)),student_score=student_mark, special=False)
+                        score=int(round(student_mark+jury_mark)),student_score=student_mark, special=False)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')

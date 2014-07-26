@@ -6,24 +6,24 @@ from django.contrib.auth.models import User, Group
 from models import *
 
 admin.site.register(Student)
-admin.site.register(Jourie)
+admin.site.register(Jury)
 admin.site.register(Score)
 admin.site.register(Result)
 admin.site.register(Item)
 
-class JourieScoreForm(forms.ModelForm):
+class JuryScoreForm(forms.ModelForm):
     class Meta:
-        model = JourieScore
+        model = JuryScore
         exclude = ('is_student',)
 
-class JourieScoreAdmin(admin.ModelAdmin):
-    form = JourieScoreForm
+class JuryScoreAdmin(admin.ModelAdmin):
+    form = JuryScoreForm
     def queryset(self, request):
-        qs = super(JourieScoreAdmin, self).queryset(request)
+        qs = super(JuryScoreAdmin, self).queryset(request)
         return qs.filter(is_student=False)
 
     def save_model(self, request, obj, form, change):
         obj.is_student = False
         obj.save()
 
-admin.site.register(JourieScore, JourieScoreAdmin)
+admin.site.register(JuryScore, JuryScoreAdmin)

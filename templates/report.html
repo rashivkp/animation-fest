@@ -44,18 +44,18 @@ $(document).ready(function(){
     <table class="table">
       <tr>
         <th>Name</th>
-        <th>Jourie Score</th>
+        <th>jury Score</th>
         <th>Student Score</th>
-        {% for jourie in item.jouries %}
+        {% for jury in item.jurys %}
           <th>J{{ forloop.counter0|add:'1' }}</th>
         {% endfor %}
       </tr>
       {% for score in item.scores %}
       <tr>
         <td>{{ score.student.user.username }}</td>
-        <td>{{ score.jourie_mark }}</td>
+        <td>{{ score.jury_mark }}</td>
         <td>{{ score.student_mark }}</td>
-        {% for mark in score.jourie_score %}
+        {% for mark in score.jury_score %}
           {% if mark == '' %}
           <td>&nbsp;</td>
           {% else %}
