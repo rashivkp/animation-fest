@@ -2,11 +2,18 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 
 class Item(models.Model):
-    CATEGORY_CHOICES = (('UP', 'UP'),
-        ('HS', 'HS'),
-        ('HSS/VHSS', 'HSS/VHSS'))
+    UP = 'U'
+    HS = 'H'
+    HSS = 'S'
+    VHSS = 'V'
+    HSS_VHSS = 'W'
+    CATEGORY_CHOICES = ((UP, 'UP'),
+        (HS, 'HS'),
+        (HSS, 'HSS'),
+        (VHSS, 'VHSS'),
+        (HSS_VHSS, 'HSS/VHSS'))
     name = models.CharField(max_length=64)
-    category = models.CharField(max_length=8, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
     is_result_published = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False)
 

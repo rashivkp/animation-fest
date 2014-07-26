@@ -46,7 +46,7 @@
 <section class="">
   <div class="container">
     {% for item in results %}
-      <h2>{{ item.item.category }} {{ item.item.name }}</h2>
+      <h2>{{ item.item.get_category_display }} {{ item.item.name }}</h2>
       <table class="table">
         <tr>
           <th>Rank</th>
@@ -67,7 +67,7 @@
 <section class="">
   <div class="container">
     {% for item in results %}
-      <h2>{{ item.item.category }} {{ item.item.name }} - Result by Students Rating</h2>
+      <h2>{{ item.item.get_category_display }} {{ item.item.name }} - Result by Students Rating</h2>
       <table class="table">
         <tr>
           <th>Rank</th>

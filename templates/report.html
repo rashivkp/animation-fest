@@ -40,7 +40,7 @@ $(document).ready(function(){
 {% for item in items %}
 <section class="main" role="main">
   <div class="container">
-    <h2>{{ item.item.category }} {{ item.item.name }}</h2>
+    <h2>{{ item.item.get_category_display }} {{ item.item.name }}</h2>
     <table class="table">
       <tr>
         <th>Name</th>
