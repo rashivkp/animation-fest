@@ -153,18 +153,38 @@ def report(request):
 
 @csrf_protect
 @login_required
-def confirm_result(request):
-    if request.method == 'POST' and request.POST.get('item', False):
+def result_action(request):
+
+    if request.method == 'POST' and request.POST.get('item', False) and request.POST.get('action', False):
         item = Item.objects.get(pk=request.POST['item'])
-        if not item.is_confirmed:
+        action = request.POST['action']
+        if not item.is_confirmed and action=='confirm':
             for student in item.student_set.all():
                 student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
                 jury_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+                if student_mark == None:
+                    student_mark = 0
+                else:
+                    student_mark = int(round(student_mark))
+                if jury_mark == None:
+                    jury_mark = 0
+                else:
+                    jury_mark = int(round(jury_mark))
                 Result.objects.create(item=item, student=student,
                         score=int(round(student_mark+jury_mark)),student_score=student_mark, special=False)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')
+        else:
+            if action == 'publish':
+                item.is_result_published = True
+            elif action == 'reset':
+                item.is_confirmed = False
+                item.is_result_published = False
+                item.result_set.all().delete()
+            item.save()
+            return HttpResponse('success')
+
         return HttpResponseForbidden()
 
 @csrf_protect
@@ -173,8 +193,6 @@ def publish_result(request):
     if request.method == 'POST' and request.POST.get('item', False):
         item = Item.objects.get(pk=request.POST['item'])
         if item.is_confirmed:
-            item.is_result_published = True
-            item.save()
             return HttpResponse('success')
 
         return HttpResponseForbidden()
