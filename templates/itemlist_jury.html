@@ -25,7 +25,7 @@ $(document).ready(function(){
     {% if item.item.is_confirmed %}
       {% for score in item.scores %}
       <tr>
-      <td>{{ score.student.user.username }}</td>
+      <td>{{ score.student.user.get_full_name }}</td>
       <td><div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
         data-item="{{ item.item.id }}"></div></td>
       {% endfor %}
@@ -33,7 +33,7 @@ $(document).ready(function(){
     {% else %}
       {% for score in item.scores %}
       <tr>
-      <td>{{ score.student.user.username }}</td>
+      <td>{{ score.student.user.get_full_name }}</td>
       <td><div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.student.id }}"
         data-item="{{ item.item.id }}"></div></td>
       </tr>

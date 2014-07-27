@@ -174,7 +174,7 @@ class ItemListView(ListView):
     @method_decorator(login_required)
     @method_decorator(user_passes_test(is_admin, login_url='/'))
     def dispatch(self, *args, **kwargs):
-        return super(ItemDetailView, self).dispatch(*args, **kwargs)
+        return super(ItemListView, self).dispatch(*args, **kwargs)
 
 class ItemDetailView(DetailView):
     model = Item

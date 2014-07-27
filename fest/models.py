@@ -28,7 +28,7 @@ class Student(models.Model):
     items = models.ManyToManyField(Item)
 
     def __unicode__(self):
-        return "%s" % (self.user.username)
+        return "%s@%s" % (self.user.get_full_name(), self.schoolcode)
 
 class Jury(models.Model):
     user = models.OneToOneField(User)

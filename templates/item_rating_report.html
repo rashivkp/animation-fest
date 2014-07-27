@@ -47,7 +47,7 @@ $(document).ready(function(){
 <section class="main" role="main">
 <div class="container">
     <h2>{{ item.get_category_display }} {{ item.name }}</h2>
-    <table class="table">
+    <table class="table sortable">
         <tr>
             <th>Student</th>
             <th>Jurys Rating</th>
@@ -76,7 +76,7 @@ $(document).ready(function(){
         {% endfor %}
     </table>
     {% if item.is_result_published %}
-    <button class="btn btn-danger reset_result"" >Reset Result</button>
+    <button class="btn btn-danger reset_result">Reset Result</button>
     <button class="btn btn-success disabled btn-xs label_published" >Result Published</button>
     <button style="display:none;" class="btn btn-warning publish_result">Publish Result</button>
     <button style="display:none;" class="btn btn-primary confirm_result">Confirm Result</button>
@@ -84,7 +84,7 @@ $(document).ready(function(){
     <button class="btn btn-warning publish_result">Publish Result</button>
     <button style="display:none;" class="btn btn-danger reset_result">Reset Result</button>
     <button style="display:none;" class="btn btn-success disabled btn-xs label_published">Result Published</button>
-    <button style="display:none;" class="btn btn-warning publish_result">Publish Result</button>
+    <button style="display:none;" class="btn btn-primary confirm_result">Confirm Result</button>
     {% else %}
     <button class="btn btn-primary confirm_result">Confirm Result</button>
     <button style="display:none;" class="btn btn-danger reset_result">Reset Result</button>
