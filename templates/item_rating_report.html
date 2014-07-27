@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block js %}
+<script type="text/javascript">
+$(document).ready(function(){
+  var item = {{ item.id }}
+  $(".confirm_result").click(function(){
+    var self = this
+    $.post(
+      "/resultaction/",
+      {'item':item,
+      csrfmiddlewaretoken: '{{ csrf_token }}', action:'confirm' },
+      function(data) {
+        $(self).hide()
+        $('.publish_result').show()
+      });
+  });
+  $(".publish_result").click(function(){
+    var self = this
+    $.post(
+      "/resultaction/",
+      {'item':item,
+      csrfmiddlewaretoken: '{{ csrf_token }}', action:'publish' },
+      function(data) {
+        $(self).hide()
+        $('.reset_result').show()
+        $('.label_published').show()
+      });
+  });
+  $(".reset_result").click(function(){
+    var self = this;
+    $.post(
+      "/resultaction/",
+      {'item':item,
+      csrfmiddlewaretoken: '{{ csrf_token }}', action:'reset' },
+      function(data) {
+        $(self).hide()
+        $('.label_published').hide()
+        $('.confirm_result').show()
+      });
+  });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="main" role="main">
+<div class="container">
+    <h2>{{ item.get_category_display }} {{ item.name }}</h2>
+    <table class="table">
+        <tr>
+            <th>Student</th>
+            <th>Jurys Rating</th>
+            <th>Students Rating</th>
+            <th>No. of Jurys Rated</th>
+            <th>No. of Students Rated</th>
+            {% for jury in item.jury_set.all %}
+              <th>J{{ forloop.counter0|add:'1' }}</th>
+            {% endfor %}
+        </tr>
+        {% for s in students %}
+        <tr>
+            <td>{{ s.student }}</td>
+            <td>{{ s.jurys_mark }}</td>
+            <td>{{ s.students_mark }}</td>
+            <td>{{ s.jurys_scored }}</td>
+            <td>{{ s.students_scored }}</td>
+            {% for mark in s.jury_score %}
+              {% if mark == '' %}
+              <td>&nbsp;</td>
+              {% else %}
+              <td>{{ mark }}</td>
+              {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% if item.is_result_published %}
+    <button class="btn btn-danger reset_result"" >Reset Result</button>
+    <button class="btn btn-success disabled btn-xs label_published" >Result Published</button>
+    <button style="display:none;" class="btn btn-warning publish_result">Publish Result</button>
+    <button style="display:none;" class="btn btn-primary confirm_result">Confirm Result</button>
+    {% elif item.is_confirmed %}
+    <button class="btn btn-warning publish_result">Publish Result</button>
+    <button style="display:none;" class="btn btn-danger reset_result">Reset Result</button>
+    <button style="display:none;" class="btn btn-success disabled btn-xs label_published">Result Published</button>
+    <button style="display:none;" class="btn btn-warning publish_result">Publish Result</button>
+    {% else %}
+    <button class="btn btn-primary confirm_result">Confirm Result</button>
+    <button style="display:none;" class="btn btn-danger reset_result">Reset Result</button>
+    <button style="display:none;" class="btn btn-success disabled btn-xs label_published">Result Published</button>
+    <button style="display:none;" class="btn btn-warning publish_result">Publish Result</button>
+    {% endif %}
+</div>
+</section>
+{% endblock %}
+

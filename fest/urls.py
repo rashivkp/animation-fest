@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 from django.conf import settings
 
-from fest.views import score, rateMe, home, report, result_action, ItemListView
+from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailView
 from django.contrib import admin, auth
 from django.contrib.auth.views import logout
 admin.autodiscover()
@@ -10,8 +10,8 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^$', home, name='home'),
     url(r'^score/$', score, name='items'),
-    url(r'^report/$', report, name='report'),
-    url(r'^report/items/$', ItemListView.as_view(), name='item_report'),
+    url(r'^report/$', ItemListView.as_view(), name='item_report'),
+    url(r'^report/(?P<pk>\d+)$', ItemDetailView.as_view(), name='item_rating_report'),
     url(r'^resultaction/$', result_action, name='resultaction'),
     url(r'^admin/$', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),

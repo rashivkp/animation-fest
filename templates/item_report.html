@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load url from future %}
 
 {% block content %}
 <section class="main" role="main">
@@ -11,7 +12,7 @@
         </tr>
         {% for item in items %}
         <tr>
-            <td>{{ item.get_category_display }} {{ item.name }}</td>
+            <td><a href="{% url 'item_rating_report' item.id %}">{{ item.get_category_display }} {{ item.name }}</a></td>
             <td>{{ item.jury_set.count }}</td>
             <td>{{ item.student_set.count }}</td>
         </tr>

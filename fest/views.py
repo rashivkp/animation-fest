@@ -5,13 +5,14 @@ from django.core import serializers
 from fest.models import *
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
 from django.template.response import TemplateResponse
 from django.template import RequestContext
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 
 def can_rate(user):
     if not hasattr(user, 'student'):
@@ -121,39 +122,6 @@ def home(request, template_name='index.html', authentication_form=Authentication
 
 @csrf_protect
 @login_required
-@user_passes_test(is_admin, login_url='/')
-def report(request):
-    items = []
-    for item in Item.objects.all():
-        studentlist = {'item': item, 'scores':[], 'jurys': item.jury_set.all()}
-        for student in item.student_set.all():
-            student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            jury_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-            jury_score = []
-            for jury in item.jury_set.all():
-                try:
-                    jury_score.append(Score.objects.get(is_student=False,
-                        student=student, item=item, scored_by=jury.user).mark)
-                except ObjectDoesNotExist:
-                    jury_score.append('')
-            if student_mark == None:
-                student_mark = '-'
-            else:
-                student_mark = int(round(student_mark))
-            if jury_mark == None:
-                jury_mark = '-'
-            else:
-                jury_mark = int(round(jury_mark))
-            studentlist['scores'].append({ 'student': student,'jury_score':jury_score,
-                'student_mark':student_mark,
-                'jury_mark': jury_mark})
-        items.append(studentlist)
-
-    return render_to_response('report.html', { 'user': request.user, 'items': items},
-            context_instance=RequestContext(request))
-
-@csrf_protect
-@login_required
 def result_action(request):
 
     if request.method == 'POST' and request.POST.get('item', False) and request.POST.get('action', False):
@@ -202,3 +170,51 @@ class ItemListView(ListView):
     model = Item
     template_name = 'item_report.html'
     context_object_name = 'items'
+
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(is_admin, login_url='/'))
+    def dispatch(self, *args, **kwargs):
+        return super(ItemDetailView, self).dispatch(*args, **kwargs)
+
+class ItemDetailView(DetailView):
+    model = Item
+    template_name = 'item_rating_report.html'
+    context_object_name = 'item'
+
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(is_admin, login_url='/'))
+    def dispatch(self, *args, **kwargs):
+        return super(ItemDetailView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(ItemDetailView, self).get_context_data(*args, **kwargs)
+        item = self.get_object()
+        ctx['students'] = []
+        for student in item.student_set.all():
+            jury_score = []
+            for jury in item.jury_set.all():
+                try:
+                    jury_score.append(Score.objects.get(is_student=False,
+                        student=student, item=item, scored_by=jury.user).mark)
+                except ObjectDoesNotExist:
+                    jury_score.append('')
+
+            scores = item.score_set.filter(student=student)
+            jurys_mark = scores.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
+            if jurys_mark == None:
+                jurys_mark = 0
+                jurys_scored = 0
+            else:
+                jurys_scored = scores.filter(is_student=False).count()
+
+            students_mark = scores.filter(is_student=True).aggregate(Avg('mark'))['mark__avg']
+            if students_mark == None:
+                students_mark = 0
+                students_scored = 0
+            else:
+                students_scored = scores.filter(is_student=True).count()
+
+            ctx['students'].append({'student': student, 'jury_score':jury_score, 'jurys_mark': jurys_mark, 'students_mark': students_mark,
+                'jurys_scored': jurys_scored, 'students_scored': students_scored})
+
+        return ctx
