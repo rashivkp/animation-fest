@@ -18,7 +18,7 @@ class Item(models.Model):
     is_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return '%s %s' % (self.category, self.name)
+        return '%s %s' % (self.get_category_display(), self.name)
 
 class Student(models.Model):
     user = models.OneToOneField(User)
