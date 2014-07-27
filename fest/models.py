@@ -20,6 +20,12 @@ class Item(models.Model):
     def __unicode__(self):
         return '%s %s' % (self.get_category_display(), self.name)
 
+    def get_students_rated(self):
+        return self.score_set.filter(is_student=True)
+
+    def get_jury_rated(self):
+        return self.score_set.filter(is_student=False)
+
 class Student(models.Model):
     user = models.OneToOneField(User)
     school = models.CharField(max_length=64)

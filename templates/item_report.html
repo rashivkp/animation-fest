@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="main" role="main">
+<div class="container">
+    <table class="table">
+        <tr>
+            <th>Item</th>
+            <th>No. of Jurys</th>
+            <th>No. of Participants</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.get_category_display }} {{ item.name }}</td>
+            <td>{{ item.jury_set.count }}</td>
+            <td>{{ item.student_set.count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</section>
+{% endblock %}
+

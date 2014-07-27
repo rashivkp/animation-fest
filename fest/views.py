@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
+from django.views.generic import ListView
 
 def can_rate(user):
     if not hasattr(user, 'student'):
@@ -196,3 +197,8 @@ def publish_result(request):
             return HttpResponse('success')
 
         return HttpResponseForbidden()
+
+class ItemListView(ListView):
+    model = Item
+    template_name = 'item_report.html'
+    context_object_name = 'items'
