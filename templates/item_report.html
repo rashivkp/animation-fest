@@ -14,7 +14,7 @@
         <tr>
             <td><a href="{% url 'item_rating_report' item.id %}">{{ item.get_category_display }} {{ item.name }}</a></td>
             <td>{{ item.jury_set.count }}</td>
-            <td>{{ item.student_set.count }}</td>
+            <td>{{ item.participant_set.count }}</td>
         </tr>
         {% endfor %}
     </table>

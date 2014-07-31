@@ -12,8 +12,9 @@ class Migration(SchemaMigration):
         db.create_table(u'fest_item', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
-            ('category', self.gf('django.db.models.fields.CharField')(max_length=8)),
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=1)),
             ('is_result_published', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('is_confirmed', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'fest', ['Item'])
 
@@ -27,43 +28,67 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'fest', ['Student'])
 
-        # Adding M2M table for field items on 'Student'
-        m2m_table_name = db.shorten_name(u'fest_student_items')
+        # Adding model 'Participant'
+        db.create_table(u'fest_participant', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('item', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Item'])),
+            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Student'])),
+            ('code', self.gf('django.db.models.fields.IntegerField')()),
+        ))
+        db.send_create_signal(u'fest', ['Participant'])
+
+        # Adding model 'Jury'
+        db.create_table(u'fest_jury', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
+            ('bio', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+        ))
+        db.send_create_signal(u'fest', ['Jury'])
+
+        # Adding M2M table for field items on 'Jury'
+        m2m_table_name = db.shorten_name(u'fest_jury_items')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('student', models.ForeignKey(orm[u'fest.student'], null=False)),
+            ('jury', models.ForeignKey(orm[u'fest.jury'], null=False)),
             ('item', models.ForeignKey(orm[u'fest.item'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['student_id', 'item_id'])
+        db.create_unique(m2m_table_name, ['jury_id', 'item_id'])
 
         # Adding model 'Score'
         db.create_table(u'fest_score', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('participant', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Participant'])),
             ('scored_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Student'])),
-            ('item', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Item'])),
             ('mark', self.gf('django.db.models.fields.IntegerField')()),
+            ('is_student', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal(u'fest', ['Score'])
 
-        # Adding unique constraint on 'Score', fields ['scored_by', 'student', 'item']
-        db.create_unique(u'fest_score', ['scored_by_id', 'student_id', 'item_id'])
+        # Adding unique constraint on 'Score', fields ['scored_by', 'participant']
+        db.create_unique(u'fest_score', ['scored_by_id', 'participant_id'])
 
         # Adding model 'Result'
         db.create_table(u'fest_result', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('item', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Item'])),
-            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Student'])),
-            ('score', self.gf('django.db.models.fields.IntegerField')()),
-            ('special', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('comment', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('participant', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Participant'])),
+            ('score', self.gf('django.db.models.fields.FloatField')()),
+            ('student_score', self.gf('django.db.models.fields.FloatField')(default=0)),
         ))
         db.send_create_signal(u'fest', ['Result'])
 
+        # Adding model 'SpecialAward'
+        db.create_table(u'fest_specialaward', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('participant', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['fest.Participant'])),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('comment', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+        ))
+        db.send_create_signal(u'fest', ['SpecialAward'])
+
 
     def backwards(self, orm):
-        # Removing unique constraint on 'Score', fields ['scored_by', 'student', 'item']
-        db.delete_unique(u'fest_score', ['scored_by_id', 'student_id', 'item_id'])
+        # Removing unique constraint on 'Score', fields ['scored_by', 'participant']
+        db.delete_unique(u'fest_score', ['scored_by_id', 'participant_id'])
 
         # Deleting model 'Item'
         db.delete_table(u'fest_item')
@@ -71,14 +96,23 @@ class Migration(SchemaMigration):
         # Deleting model 'Student'
         db.delete_table(u'fest_student')
 
-        # Removing M2M table for field items on 'Student'
-        db.delete_table(db.shorten_name(u'fest_student_items'))
+        # Deleting model 'Participant'
+        db.delete_table(u'fest_participant')
+
+        # Deleting model 'Jury'
+        db.delete_table(u'fest_jury')
+
+        # Removing M2M table for field items on 'Jury'
+        db.delete_table(db.shorten_name(u'fest_jury_items'))
 
         # Deleting model 'Score'
         db.delete_table(u'fest_score')
 
         # Deleting model 'Result'
         db.delete_table(u'fest_result')
+
+        # Deleting model 'SpecialAward'
+        db.delete_table(u'fest_specialaward')
 
 
     models = {
@@ -120,32 +154,51 @@ class Migration(SchemaMigration):
         },
         u'fest.item': {
             'Meta': {'object_name': 'Item'},
-            'category': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
+            'category': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_confirmed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_result_published': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
-        u'fest.result': {
-            'Meta': {'object_name': 'Result'},
-            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+        u'fest.jury': {
+            'Meta': {'object_name': 'Jury'},
+            'bio': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'items': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['fest.Item']", 'symmetrical': 'False'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
+        },
+        u'fest.participant': {
+            'Meta': {'object_name': 'Participant'},
+            'code': ('django.db.models.fields.IntegerField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'item': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Item']"}),
-            'score': ('django.db.models.fields.IntegerField', [], {}),
-            'special': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Student']"})
         },
-        u'fest.score': {
-            'Meta': {'unique_together': "(('scored_by', 'student', 'item'),)", 'object_name': 'Score'},
+        u'fest.result': {
+            'Meta': {'object_name': 'Result'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'item': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Item']"}),
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'score': ('django.db.models.fields.FloatField', [], {}),
+            'student_score': ('django.db.models.fields.FloatField', [], {'default': '0'})
+        },
+        u'fest.score': {
+            'Meta': {'unique_together': "(('scored_by', 'participant'),)", 'object_name': 'Score'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_student': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'mark': ('django.db.models.fields.IntegerField', [], {}),
-            'scored_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Student']"})
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'scored_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
+        },
+        u'fest.specialaward': {
+            'Meta': {'object_name': 'SpecialAward'},
+            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         u'fest.student': {
             'Meta': {'object_name': 'Student'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'items': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['fest.Item']", 'symmetrical': 'False'}),
             'school': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'schoolcode': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
             'std': ('django.db.models.fields.IntegerField', [], {}),

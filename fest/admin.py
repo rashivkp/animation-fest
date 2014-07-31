@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 
 from models import *
 
+admin.site.register(Participant)
 admin.site.register(Score)
 admin.site.register(Result)
 admin.site.register(Item)
@@ -15,8 +16,7 @@ class StudentForm(forms.ModelForm):
 
     class Meta:
         model = Student
-        fields = ('first_name', 'last_name', 'school', 'schoolcode', 'std',
-        'items')
+        fields = ('first_name', 'last_name', 'school', 'schoolcode', 'std')
 
     def __init__(self, *args, **kwargs):
         if 'request' in kwargs:
