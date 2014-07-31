@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^report/$', ItemListView.as_view(), name='item_report'),
     url(r'^report/(?P<pk>\d+)$', ItemDetailView.as_view(), name='item_rating_report'),
     url(r'^resultaction/$', result_action, name='resultaction'),
-    url(r'^admin/$', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),
     url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
 )
