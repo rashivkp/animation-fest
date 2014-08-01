@@ -200,7 +200,7 @@ class ItemDetailView(DetailView):
             jury_score = []
             for jury in item.jury_set.all():
                 try:
-                    jury_score.append(participant.score_set.get(scored_by=jury.user).mark)
+                    jury_score.append(participant.score_set.get(scored_by=jury.user).mark*.75)
                 except ObjectDoesNotExist:
                     jury_score.append('')
 
@@ -210,6 +210,7 @@ class ItemDetailView(DetailView):
                 jury_mark = 0
                 jury_scored = 0
             else:
+                jury_mark *= .75
                 jury_scored = scores.filter(is_student=False).count()
 
             students_mark = scores.filter(is_student=True,
@@ -218,6 +219,7 @@ class ItemDetailView(DetailView):
                 students_mark = 0
                 students_scored = 0
             else:
+                students_mark *= 2.5
                 students_scored = scores.filter(is_student=True).count()
 
             ctx['participants'].append({'participant': participant, 'jury_score':jury_score, 'jury_mark': jury_mark, 'students_mark': students_mark,

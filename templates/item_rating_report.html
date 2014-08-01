@@ -51,22 +51,18 @@ $(document).ready(function(){
         <tr>
             <th>Student</th>
             <th>Code</th>
-            <th>jury Rating</th>
+            <th>Experts Rating</th>
             <th>Students Rating</th>
-            <th>No. of jury Rated</th>
-            <th>No. of Students Rated</th>
             {% for jury in item.jury_set.all %}
               <th>J{{ forloop.counter0|add:'1' }}</th>
             {% endfor %}
         </tr>
         {% for s in participants %}
         <tr>
-            <td>{{ s.participant.student }}</td>
+            <td>{{ s.participant.student.user.get_full_name }}</td>
             <td>{{ s.participant.code }}</td>
             <td>{{ s.jury_mark }}</td>
             <td>{{ s.students_mark }}</td>
-            <td>{{ s.jury_scored }}</td>
-            <td>{{ s.students_scored }}</td>
             {% for mark in s.jury_score %}
               {% if mark == '' %}
               <td>&nbsp;</td>

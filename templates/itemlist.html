@@ -26,9 +26,9 @@ $(document).ready(function(){
 {% block content %}
 
 {% csrf_token %}
-{% for item in items %}
 <section class="main" role="main">
   <div class="container">
+    {% for item in items %}
     <h2>{{ item.item.get_category_display }} {{ item.item.name }}</h2>
     <div class="panel-group" id="accordion{{ item.item.id }}">
       {% for score in item.scores %}
@@ -51,10 +51,10 @@ $(document).ready(function(){
       </div>
       {% endfor %}
     </div>
+    {% endfor %}
+    {% if not user.student.is_rating_confirmed %}
+    <a class="btn btn-danger" href="{% url 'confirm_rating' %}">Confirm Rating</a>
+    {% endif %}
   </div>
 </section>
-{% endfor %}
-{% if not user.student.is_rating_confirmed %}
-<a class="btn btn-danger" href="{% url 'confirm_rating' %}">Confirm Rating</a>
-{% endif %}
 {% endblock %}
