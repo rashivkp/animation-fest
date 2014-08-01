@@ -13,6 +13,7 @@ from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
 from django.views.generic import ListView, DetailView
+from django.contrib import messages
 
 def can_rate(user):
     if not hasattr(user, 'student'):
@@ -33,13 +34,13 @@ def score(request):
         item_list = Item.objects.all()
     for item in item_list:
         studentlist = {'item': item, 'scores':[] }
-        for student in Student.objects.filter(items__in=Item.objects.filter(pk=item.id)):
+        for participant in item.participant_set.all():
             try:
-                score = Score.objects.get(scored_by=request.user, item=item,
-                    student=student).mark
+                score = Score.objects.get(scored_by=request.user,
+                        participant=participant).mark
             except ObjectDoesNotExist:
                 score = 0
-            studentlist['scores'].append({'student': student, 'score': score})
+            studentlist['scores'].append({'participant': participant, 'score': score})
         items.append(studentlist)
 
     if request.user.groups.filter(name__icontains='Jury').exists():
@@ -52,25 +53,38 @@ def score(request):
 @csrf_protect
 @login_required
 def rateMe(request):
-    if request.method == 'POST':
-        student = Student.objects.get(pk=request.POST.get('idStudent', False))
+    if request.method == 'POST' and request.POST.get('action', False) == 'rating':
         item = Item.objects.get(pk=request.POST.get('idItem', False))
+        participant = Participant.objects.get(pk=request.POST.get('idStudent',
+            False), item=item)
         if item.is_confirmed:
             return HttpResponseForbidden()
-        if student and item:
+        if participant and item:
             try:
-                score = Score.objects.get(scored_by=request.user, student=student, item=item)
+                score = participant.score_set.get(scored_by=request.user)
                 score.mark = request.POST.get('rate', 0)
                 score.save()
             except ObjectDoesNotExist:
                 if request.user.groups.filter(name='Jury').count():
                     Score.objects.create(scored_by=request.user,
-                        student=student, item=item,
-                        mark=request.POST.get('rate', 0), is_student=False)
+                        participant=participant, mark=request.POST.get('rate', 0), is_student=False)
                 else:
                     Score.objects.create(scored_by=request.user,
-                        student=student, item=item, mark=request.POST.get('rate', 0))
+                        participant=participant, mark=request.POST.get('rate', 0))
         return HttpResponse('success')
+
+def confirm_rating(request):
+    if hasattr(request.user, 'student'):
+        if Score.objects.filter(scored_by = request.user).count() == Participant.objects.filter(item__is_student_ratable=True).count():
+            request.user.student.is_rating_confirmed = True
+            request.user.student.save()
+            messages.success(request, 'Rating Confirmed Successfully')
+        else:
+            messages.error(request, 'Please Rate All Students')
+    elif hasattr(request.user, 'jury'):
+        request.user.jury.is_rating_confirmed = True
+        request.user.jury.save()
+    return HttpResponseRedirect('/score')
 
 @csrf_protect
 def home(request, template_name='index.html', authentication_form=AuthenticationForm):
@@ -128,9 +142,10 @@ def result_action(request):
         item = Item.objects.get(pk=request.POST['item'])
         action = request.POST['action']
         if not item.is_confirmed and action=='confirm':
-            for student in item.student_set.all():
-                student_mark = Score.objects.filter(is_student=True, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
-                jury_mark = Score.objects.filter(is_student=False, student=student, item=item).aggregate(Avg('mark'))['mark__avg']
+            for participant in item.participant_set.all():
+                students_mark = participant.score_set.filter(is_student=True,
+                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
+                jury_mark = participant.score_set.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
                 if student_mark == None:
                     student_mark = 0
                 else:
@@ -139,8 +154,7 @@ def result_action(request):
                     jury_mark = 0
                 else:
                     jury_mark = int(round(jury_mark))
-                Result.objects.create(item=item, student=student,
-                        score=int(round(student_mark+jury_mark)),student_score=student_mark, special=False)
+                Result.objects.create(participant=participant, score=student_mark+jury_mark, student_score=student_mark)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')
@@ -150,18 +164,8 @@ def result_action(request):
             elif action == 'reset':
                 item.is_confirmed = False
                 item.is_result_published = False
-                item.result_set.all().delete()
+                Result.objects.filter(participant__item = item).all().delete()
             item.save()
-            return HttpResponse('success')
-
-        return HttpResponseForbidden()
-
-@csrf_protect
-@login_required
-def publish_result(request):
-    if request.method == 'POST' and request.POST.get('item', False):
-        item = Item.objects.get(pk=request.POST['item'])
-        if item.is_confirmed:
             return HttpResponse('success')
 
         return HttpResponseForbidden()
@@ -189,32 +193,32 @@ class ItemDetailView(DetailView):
     def get_context_data(self, *args, **kwargs):
         ctx = super(ItemDetailView, self).get_context_data(*args, **kwargs)
         item = self.get_object()
-        ctx['students'] = []
-        for student in item.student_set.all():
+        ctx['participants'] = []
+        for participant in item.participant_set.all():
             jury_score = []
             for jury in item.jury_set.all():
                 try:
-                    jury_score.append(Score.objects.get(is_student=False,
-                        student=student, item=item, scored_by=jury.user).mark)
+                    jury_score.append(participant.score_set.get(scored_by=jury.user).mark)
                 except ObjectDoesNotExist:
                     jury_score.append('')
 
-            scores = item.score_set.filter(student=student)
-            jurys_mark = scores.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
-            if jurys_mark == None:
-                jurys_mark = 0
-                jurys_scored = 0
+            scores = participant.score_set.all()
+            jury_mark = scores.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
+            if jury_mark == None:
+                jury_mark = 0
+                jury_scored = 0
             else:
-                jurys_scored = scores.filter(is_student=False).count()
+                jury_scored = scores.filter(is_student=False).count()
 
-            students_mark = scores.filter(is_student=True).aggregate(Avg('mark'))['mark__avg']
+            students_mark = scores.filter(is_student=True,
+                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
             if students_mark == None:
                 students_mark = 0
                 students_scored = 0
             else:
                 students_scored = scores.filter(is_student=True).count()
 
-            ctx['students'].append({'student': student, 'jury_score':jury_score, 'jurys_mark': jurys_mark, 'students_mark': students_mark,
-                'jurys_scored': jurys_scored, 'students_scored': students_scored})
+            ctx['participants'].append({'participant': participant, 'jury_score':jury_score, 'jury_mark': jury_mark, 'students_mark': students_mark,
+                'jury_scored': jury_scored, 'students_scored': students_scored})
 
         return ctx

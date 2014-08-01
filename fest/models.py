@@ -14,6 +14,7 @@ class Item(models.Model):
         (HSS_VHSS, 'HSS/VHSS'))
     name = models.CharField(max_length=64)
     category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
+    is_student_ratable = models.BooleanField(default=False)
     is_result_published = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False)
 
@@ -25,10 +26,15 @@ class Student(models.Model):
     school = models.CharField(max_length=64)
     schoolcode = models.CharField(max_length=8)
     std = models.IntegerField()
-    items = models.ManyToManyField(Item)
+    is_rating_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "%s@%s" % (self.user.get_full_name(), self.schoolcode)
+
+class Participant(models.Model):
+    item = models.ForeignKey(Item)
+    student = models.ForeignKey(Student)
+    code = models.IntegerField()
 
 class Jury(models.Model):
     user = models.OneToOneField(User)
@@ -39,13 +45,12 @@ class Jury(models.Model):
         return "%s" % (self.user.username)
 
 class Score(models.Model):
+    participant = models.ForeignKey(Participant)
     scored_by = models.ForeignKey(User)
-    student = models.ForeignKey(Student)
-    item = models.ForeignKey(Item)
     mark = models.IntegerField()
     is_student = models.BooleanField(default=True)
     class Meta:
-        unique_together = ('scored_by', 'student', 'item')
+        unique_together = ('scored_by', 'participant')
 
 class JuryScore(Score):
     class Meta:
@@ -56,9 +61,11 @@ class JuryScore(Score):
         self.is_student = False
 
 class Result(models.Model):
-    item = models.ForeignKey(Item)
-    student = models.ForeignKey(Student)
-    score = models.IntegerField()
+    participant = models.ForeignKey(Participant)
+    score = models.FloatField()
     student_score = models.FloatField(default=0)
-    special = models.BooleanField(default=False)
-    comment = models.TextField(blank=True, null=True)
+
+class SpecialAward(models.Model):
+    participant = models.ForeignKey(Participant)
+    title = models.CharField(max_length=64)
+    comment = models.TextField(null=True, blank=True)

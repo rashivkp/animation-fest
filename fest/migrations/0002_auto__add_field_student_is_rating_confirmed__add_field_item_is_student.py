@@ -8,15 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Result.student_score'
-        db.add_column(u'fest_result', 'student_score',
-                      self.gf('django.db.models.fields.FloatField')(default=0),
+        # Adding field 'Student.is_rating_confirmed'
+        db.add_column(u'fest_student', 'is_rating_confirmed',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'Item.is_student_ratable'
+        db.add_column(u'fest_item', 'is_student_ratable',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Result.student_score'
-        db.delete_column(u'fest_result', 'student_score')
+        # Deleting field 'Student.is_rating_confirmed'
+        db.delete_column(u'fest_student', 'is_rating_confirmed')
+
+        # Deleting field 'Item.is_student_ratable'
+        db.delete_column(u'fest_item', 'is_student_ratable')
 
 
     models = {
@@ -58,42 +66,53 @@ class Migration(SchemaMigration):
         },
         u'fest.item': {
             'Meta': {'object_name': 'Item'},
-            'category': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
+            'category': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_confirmed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_result_published': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_student_ratable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
-        u'fest.jourie': {
-            'Meta': {'object_name': 'Jourie'},
+        u'fest.jury': {
+            'Meta': {'object_name': 'Jury'},
             'bio': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'items': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['fest.Item']", 'symmetrical': 'False'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         },
-        u'fest.result': {
-            'Meta': {'object_name': 'Result'},
-            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+        u'fest.participant': {
+            'Meta': {'object_name': 'Participant'},
+            'code': ('django.db.models.fields.IntegerField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'item': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Item']"}),
-            'score': ('django.db.models.fields.IntegerField', [], {}),
-            'special': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Student']"}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Student']"})
+        },
+        u'fest.result': {
+            'Meta': {'object_name': 'Result'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'score': ('django.db.models.fields.FloatField', [], {}),
             'student_score': ('django.db.models.fields.FloatField', [], {'default': '0'})
         },
         u'fest.score': {
-            'Meta': {'unique_together': "(('scored_by', 'student', 'item'),)", 'object_name': 'Score'},
+            'Meta': {'unique_together': "(('scored_by', 'participant'),)", 'object_name': 'Score'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_student': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'item': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Item']"}),
             'mark': ('django.db.models.fields.IntegerField', [], {}),
-            'scored_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Student']"})
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'scored_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
+        },
+        u'fest.specialaward': {
+            'Meta': {'object_name': 'SpecialAward'},
+            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'participant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['fest.Participant']"}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         u'fest.student': {
             'Meta': {'object_name': 'Student'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'items': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['fest.Item']", 'symmetrical': 'False'}),
+            'is_rating_confirmed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'school': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'schoolcode': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
             'std': ('django.db.models.fields.IntegerField', [], {}),

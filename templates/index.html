@@ -56,8 +56,9 @@
         {% for r in item.common_result %}
         <tr>
           <td>{{ r.rank }}</td>
-          <td>{{ r.result.student.user.get_full_name }}</td>
-          <td>{{ r.result.student.school }}</td>
+          <td>{{ r.result.participant.code }}</td>
+          <td>{{ r.result.particpant.student.user.get_full_name }}</td>
+          <td>{{ r.result.participant.student.school }}</td>
         </tr>
         {% endfor %}
       </table>
@@ -77,8 +78,9 @@
         {% for r in item.student_result %}
         <tr>
           <td>{{ r.rank }}</td>
-          <td>{{ r.result.student.user.get_full_name }}</td>
-          <td>{{ r.result.student.school }}</td>
+          <td>{{ r.result.participant.code }}</td>
+          <td>{{ r.result.participant.student.user.get_full_name }}</td>
+          <td>{{ r.result.participant.student.school }}</td>
         </tr>
         {% endfor %}
       </table>

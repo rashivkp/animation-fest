@@ -50,20 +50,22 @@ $(document).ready(function(){
     <table class="table sortable">
         <tr>
             <th>Student</th>
-            <th>Jurys Rating</th>
+            <th>Code</th>
+            <th>jury Rating</th>
             <th>Students Rating</th>
-            <th>No. of Jurys Rated</th>
+            <th>No. of jury Rated</th>
             <th>No. of Students Rated</th>
             {% for jury in item.jury_set.all %}
               <th>J{{ forloop.counter0|add:'1' }}</th>
             {% endfor %}
         </tr>
-        {% for s in students %}
+        {% for s in participants %}
         <tr>
-            <td>{{ s.student }}</td>
-            <td>{{ s.jurys_mark }}</td>
+            <td>{{ s.participant.student }}</td>
+            <td>{{ s.participant.code }}</td>
+            <td>{{ s.jury_mark }}</td>
             <td>{{ s.students_mark }}</td>
-            <td>{{ s.jurys_scored }}</td>
+            <td>{{ s.jury_scored }}</td>
             <td>{{ s.students_scored }}</td>
             {% for mark in s.jury_score %}
               {% if mark == '' %}
