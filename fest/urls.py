@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 from django.conf import settings
 
-from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailView
+from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailView, confirm_rating
 from django.contrib import admin, auth
 from django.contrib.auth.views import logout
 admin.autodiscover()
@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     url(r'^resultaction/$', result_action, name='resultaction'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),
+    url(r'^rating/confirm$', confirm_rating, name='confirm_rating'),
     url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
 )
 

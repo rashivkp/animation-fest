@@ -10,8 +10,16 @@
 <script type="text/javascript">
 $(document).ready(function(){
     $(".rating.disabled").jRating({isDisabled:true});
-    $(".rating.enabled").jRating({nbRates : 3});
-});
+    $(".rating.enabled").jRating({nbRates : 10,step: true, length: 10, rateMax:10});
+    $(".confirm_rating").click(function(){
+      $.post(
+        "/rate/",
+        {'action': 'confirm', csrfmiddlewaretoken: '{{ csrf_token }}'},
+        function(data) {
+          $(self).hide()
+        });
+      });
+    });
 </script>
 {% endblock %}
 
@@ -22,25 +30,30 @@ $(document).ready(function(){
 <section class="main" role="main">
   <div class="container">
     <h2>{{ item.item.get_category_display }} {{ item.item.name }}</h2>
-    <table class="table">
-    {% if item.item.is_confirmed %}
+    <div class="panel-group" id="accordion{{ item.item.id }}">
       {% for score in item.scores %}
-      <tr>
-      <td>{{ score.participant.student.user.get_full_name }}</td>
-      <td> <div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.participant.student.id }}"
-        data-item="{{ item.item.id }}"></div></td>
-      </tr>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion{{ item.item.id }}" href="#collapse{{ score.participant.code }}"># {{ score.participant.code }} </a>
+          </h4>
+        </div>
+        <div id="collapse{{ score.participant.code }}" class="panel-collapse collapse out">
+          <div class="panel-body">
+            {{ score.participant.student.user.get_full_name }}
+            {% if item.item.is_confirmed or user.student.is_rating_confirmed %}
+            <div class="rating disabled" data-average="{{ score.score }}" data-student="{{ score.participant.student.id }}" data-item="{{ item.item.id }}"></div>
+            {% else %}
+            <div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.participant.student.id }}" data-item="{{ item.item.id }}"></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
       {% endfor %}
-    {% else %}
-      {% for score in item.scores %}
-      <tr>
-      <td>{{ score.participant.student.user.get_full_name }}</td>
-      <td> <div class="rating enabled" data-average="{{ score.score }}" data-student="{{ score.participant.student.id }}"
-        data-item="{{ item.item.id }}"></div></td>
-      </tr>
-      {% endfor %}
+    </div>
+    {% if not user.student.is_rating_confirmed %}
+    <a class="btn btn-danger" href="{% url 'confirm_rating' %}">Confirm Rating</a>
     {% endif %}
-    </table>
   </div>
 </section>
 {% endfor %}

@@ -13,6 +13,7 @@ from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
 from django.views.generic import ListView, DetailView
+from django.contrib import messages
 
 def can_rate(user):
     if not hasattr(user, 'student'):
@@ -52,7 +53,7 @@ def score(request):
 @csrf_protect
 @login_required
 def rateMe(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.POST.get('action', False) == 'rating':
         item = Item.objects.get(pk=request.POST.get('idItem', False))
         participant = Participant.objects.get(pk=request.POST.get('idStudent',
             False), item=item)
@@ -71,6 +72,19 @@ def rateMe(request):
                     Score.objects.create(scored_by=request.user,
                         participant=participant, mark=request.POST.get('rate', 0))
         return HttpResponse('success')
+
+def confirm_rating(request):
+    if hasattr(request.user, 'student'):
+        if Score.objects.filter(scored_by = request.user).count() == Participant.objects.filter(item__is_student_ratable=True).count():
+            request.user.student.is_rating_confirmed = True
+            request.user.student.save()
+            messages.success(request, 'Rating Confirmed Successfully')
+        else:
+            messages.error(request, 'Please Rate All Students')
+    elif hasattr(request.user, 'jury'):
+        request.user.jury.is_rating_confirmed = True
+        request.user.jury.save()
+    return HttpResponseRedirect('/score')
 
 @csrf_protect
 def home(request, template_name='index.html', authentication_form=AuthenticationForm):
@@ -129,7 +143,8 @@ def result_action(request):
         action = request.POST['action']
         if not item.is_confirmed and action=='confirm':
             for participant in item.participant_set.all():
-                student_mark = participant.score_set.filter(is_student=True).aggregate(Avg('mark'))['mark__avg']
+                students_mark = participant.score_set.filter(is_student=True,
+                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
                 jury_mark = participant.score_set.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
                 if student_mark == None:
                     student_mark = 0
@@ -151,16 +166,6 @@ def result_action(request):
                 item.is_result_published = False
                 Result.objects.filter(participant__item = item).all().delete()
             item.save()
-            return HttpResponse('success')
-
-        return HttpResponseForbidden()
-
-@csrf_protect
-@login_required
-def publish_result(request):
-    if request.method == 'POST' and request.POST.get('item', False):
-        item = Item.objects.get(pk=request.POST['item'])
-        if item.is_confirmed:
             return HttpResponse('success')
 
         return HttpResponseForbidden()
@@ -205,7 +210,8 @@ class ItemDetailView(DetailView):
             else:
                 jury_scored = scores.filter(is_student=False).count()
 
-            students_mark = scores.filter(is_student=True).aggregate(Avg('mark'))['mark__avg']
+            students_mark = scores.filter(is_student=True,
+                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
             if students_mark == None:
                 students_mark = 0
                 students_scored = 0

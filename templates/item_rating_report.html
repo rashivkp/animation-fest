@@ -50,6 +50,7 @@ $(document).ready(function(){
     <table class="table sortable">
         <tr>
             <th>Student</th>
+            <th>Code</th>
             <th>jury Rating</th>
             <th>Students Rating</th>
             <th>No. of jury Rated</th>
@@ -61,6 +62,7 @@ $(document).ready(function(){
         {% for s in participants %}
         <tr>
             <td>{{ s.participant.student }}</td>
+            <td>{{ s.participant.code }}</td>
             <td>{{ s.jury_mark }}</td>
             <td>{{ s.students_mark }}</td>
             <td>{{ s.jury_scored }}</td>

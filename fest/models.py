@@ -14,6 +14,7 @@ class Item(models.Model):
         (HSS_VHSS, 'HSS/VHSS'))
     name = models.CharField(max_length=64)
     category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
+    is_student_ratable = models.BooleanField(default=False)
     is_result_published = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False)
 
@@ -25,6 +26,7 @@ class Student(models.Model):
     school = models.CharField(max_length=64)
     schoolcode = models.CharField(max_length=8)
     std = models.IntegerField()
+    is_rating_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "%s@%s" % (self.user.get_full_name(), self.schoolcode)
