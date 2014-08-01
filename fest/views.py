@@ -95,24 +95,20 @@ def home(request, template_name='index.html', authentication_form=Authentication
         mark = -1
         rank = 0
         common_result = []
-        for result in item.result_set.all().order_by('-score'):
+        for result in Result.objects.filter(participant__item=item).order_by('-score'):
             if mark != result.score:
                 rank += 1
                 mark = result.score
-                if rank == 6:
-                    break
             common_result.append({'result':result, 'rank': rank})
 
         # generating result based student rating
         student_result = []
         mark = -1
         rank = 0
-        for result in item.result_set.all().order_by('-student_score'):
+        for result in Result.objects.filter(participant__item=item).order_by('-student_score'):
             if mark != result.score:
                 rank += 1
                 mark = result.score
-                if rank == 6:
-                    break
             student_result.append({'result':result, 'rank': rank})
         results.append({'common_result': common_result, 'item':item,
             'student_result': student_result})
@@ -122,7 +118,10 @@ def home(request, template_name='index.html', authentication_form=Authentication
         if form.is_valid():
             # Okay, security check complete. Log the user in.
             login(request, form.get_user())
-            return HttpResponseRedirect('/score/')
+            if hasattr(request.user, 'student'):
+                return HttpResponseRedirect('/score/')
+            else:
+                return HttpResponseRedirect('/report/')
     elif request.user.is_authenticated():
         return TemplateResponse(request, template_name, {'user': request.user,
             'results': results})
@@ -143,8 +142,8 @@ def result_action(request):
         action = request.POST['action']
         if not item.is_confirmed and action=='confirm':
             for participant in item.participant_set.all():
-                students_mark = participant.score_set.filter(is_student=True,
-                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
+                student_mark = participant.score_set.filter(is_student=True,
+                    scored_by__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
                 jury_mark = participant.score_set.filter(is_student=False).aggregate(Avg('mark'))['mark__avg']
                 if student_mark == None:
                     student_mark = 0
@@ -176,9 +175,12 @@ class ItemListView(ListView):
     context_object_name = 'items'
 
     @method_decorator(login_required)
-    @method_decorator(user_passes_test(is_admin, login_url='/'))
     def dispatch(self, *args, **kwargs):
         return super(ItemListView, self).dispatch(*args, **kwargs)
+    def get_queryset(self):
+        if hasattr(self.request.user, 'jury'):
+            return self.request.user.jury.items.all()
+        return super(ItemListView, self).get_queryset()
 
 class ItemDetailView(DetailView):
     model = Item
@@ -211,7 +213,7 @@ class ItemDetailView(DetailView):
                 jury_scored = scores.filter(is_student=False).count()
 
             students_mark = scores.filter(is_student=True,
-                    user__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
+                    scored_by__in=User.objects.filter(student__is_rating_confirmed=True)).aggregate(Avg('mark'))['mark__avg']
             if students_mark == None:
                 students_mark = 0
                 students_scored = 0
@@ -248,6 +250,10 @@ class ItemDetailScoreView(DetailView):
 def save_score(request):
     if request.method == 'POST' and request.POST.get('item', False):
         item = Item.objects.get(pk=request.POST.get('item', False))
+        if not item.jury_set.filter(user=request.user).count():
+            messages.warning(request, 'You are not authorized')
+            return HttpResponseRedirect('/score/'+str(item.id))
+
         for p in item.participant_set.all():
             try:
                 score = p.score_set.get(scored_by=request.user)

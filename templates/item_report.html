@@ -12,7 +12,14 @@
         </tr>
         {% for item in items %}
         <tr>
-            <td><a href="{% url 'item_rating_report' item.id %}">{{ item.get_category_display }} {{ item.name }}</a></td>
+            {% for group in user.groups.all %}
+                {% if group.name == 'Jury' %}
+                <td><a href="{% url 'item_jury_scoring' item.id %}">{{ item.get_category_display }} {{ item.name }}</a></td>
+                {% endif %}
+                {% if group.name == 'Admin' %}
+                <td><a href="{% url 'item_rating_report' item.id %}">{{ item.get_category_display }} {{ item.name }}</a></td>
+                {% endif %}
+            {% endfor %}
             <td>{{ item.jury_set.count }}</td>
             <td>{{ item.participant_set.count }}</td>
         </tr>

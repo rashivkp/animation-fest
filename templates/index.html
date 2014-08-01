@@ -49,16 +49,17 @@
       <h2>{{ item.item.get_category_display }} {{ item.item.name }}</h2>
       <table class="table">
         <tr>
-          <th>Rank</th>
+          <th>Code</th>
           <th>Student</th>
           <th>School</th>
+          <th>Rank</th>
         </tr>
         {% for r in item.common_result %}
         <tr>
-          <td>{{ r.rank }}</td>
           <td>{{ r.result.participant.code }}</td>
-          <td>{{ r.result.particpant.student.user.get_full_name }}</td>
+          <td>{{ r.result.participant.student.user.get_full_name }}</td>
           <td>{{ r.result.participant.student.school }}</td>
+          <td>{{ r.rank }}</td>
         </tr>
         {% endfor %}
       </table>
@@ -71,16 +72,17 @@
       <h2>{{ item.item.get_category_display }} {{ item.item.name }} - Result by Students Rating</h2>
       <table class="table">
         <tr>
-          <th>Rank</th>
+          <th>Code</th>
           <th>Student</th>
           <th>School</th>
+          <th>Rank</th>
         </tr>
         {% for r in item.student_result %}
         <tr>
-          <td>{{ r.rank }}</td>
           <td>{{ r.result.participant.code }}</td>
           <td>{{ r.result.participant.student.user.get_full_name }}</td>
           <td>{{ r.result.participant.student.school }}</td>
+          <td>{{ r.rank }}</td>
         </tr>
         {% endfor %}
       </table>
