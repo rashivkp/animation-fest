@@ -25,7 +25,7 @@ class Student(models.Model):
     user = models.OneToOneField(User)
     school = models.CharField(max_length=64)
     schoolcode = models.CharField(max_length=8)
-    std = models.IntegerField()
+    std = models.IntegerField(null=True, blank=True, default=0)
     is_rating_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -34,7 +34,7 @@ class Student(models.Model):
 class Participant(models.Model):
     item = models.ForeignKey(Item)
     student = models.ForeignKey(Student)
-    code = models.IntegerField()
+    code = models.CharField(max_length=32)
 
     def __unicode__(self):
         return "%s #%s" % (self.item, self.code)

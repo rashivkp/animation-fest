@@ -31,7 +31,7 @@ def score(request):
     if request.user.groups.filter(name__icontains='Jury').exists():
         item_list = request.user.jury.items.all()
     else:
-        item_list = Item.objects.all()
+        item_list = Item.objects.filter(is_student_ratable=True)
     for item in item_list:
         studentlist = {'item': item, 'scores':[] }
         for participant in item.participant_set.all():
