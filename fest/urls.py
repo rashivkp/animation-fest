@@ -4,7 +4,7 @@ from django.conf import settings
 
 from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailScoreView, ItemDetailView, confirm_rating, save_score, SpecialAwardListView
 from django.contrib import admin
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import logout, password_change, password_change_done
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -20,6 +20,9 @@ urlpatterns = patterns('',
     url(r'^rate/$', rateMe, name='rating'),
     url(r'^rating/confirm$', confirm_rating, name='confirm_rating'),
     url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
+    url(r'^password/$', password_change,{'template_name':'password_change_form.html'}, name='change_password'),
+    #url(r'^password/$', password_change, name='change_password'),
+    url(r'^password/done$', password_change_done,{'template_name':'password_change_done.html'}, name='password_change_done'),
 )
 
 if settings.DEBUG and settings.MEDIA_ROOT:
