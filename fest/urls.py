@@ -2,8 +2,8 @@ from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 from django.conf import settings
 
-from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailView, confirm_rating
-from django.contrib import admin, auth
+from fest.views import score, rateMe, home, result_action, ItemListView, ItemDetailScoreView, ItemDetailView, confirm_rating, save_score
+from django.contrib import admin
 from django.contrib.auth.views import logout
 admin.autodiscover()
 
@@ -12,6 +12,8 @@ urlpatterns = patterns('',
     url(r'^score/$', score, name='items'),
     url(r'^report/$', ItemListView.as_view(), name='item_report'),
     url(r'^report/(?P<pk>\d+)$', ItemDetailView.as_view(), name='item_rating_report'),
+    url(r'^score/(?P<pk>\d+)$', ItemDetailScoreView.as_view(), name='item_jury_scoring'),
+    url(r'^score/save$', save_score, name='save_score'),
     url(r'^resultaction/$', result_action, name='resultaction'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rate/$', rateMe, name='rating'),

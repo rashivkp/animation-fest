@@ -44,7 +44,7 @@ def score(request):
         items.append(studentlist)
 
     if request.user.groups.filter(name__icontains='Jury').exists():
-        return render_to_response('itemlist_jury.html', { 'user': request.user,
+        return render_to_response('item_scoring.html', { 'user': request.user,
             'items': items}, context_instance=RequestContext(request))
     elif hasattr(request.user, 'student'):
         return render_to_response('itemlist.html', { 'user': request.user,
@@ -55,7 +55,7 @@ def score(request):
 def rateMe(request):
     if request.method == 'POST' and request.POST.get('action', False) == 'rating':
         item = Item.objects.get(pk=request.POST.get('idItem', False))
-        participant = Participant.objects.get(pk=request.POST.get('idStudent',
+        participant = Participant.objects.get(student__id=request.POST.get('idStudent',
             False), item=item)
         if item.is_confirmed:
             return HttpResponseForbidden()
@@ -80,7 +80,7 @@ def confirm_rating(request):
             request.user.student.save()
             messages.success(request, 'Rating Confirmed Successfully')
         else:
-            messages.error(request, 'Please Rate All Students')
+            messages.warning(request, 'Please Rate All Students')
     elif hasattr(request.user, 'jury'):
         request.user.jury.is_rating_confirmed = True
         request.user.jury.save()
@@ -222,3 +222,39 @@ class ItemDetailView(DetailView):
                 'jury_scored': jury_scored, 'students_scored': students_scored})
 
         return ctx
+
+class ItemDetailScoreView(DetailView):
+    model = Item
+    template_name = 'item_scoring.html'
+    context_object_name = 'item'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ItemDetailScoreView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(ItemDetailScoreView, self).get_context_data(*args, **kwargs)
+        item = self.get_object()
+        ctx['participants'] = []
+        for participant in item.participant_set.all():
+            try:
+                score = participant.score_set.get(scored_by=self.request.user)
+            except ObjectDoesNotExist:
+                score = 0
+            ctx['participants'].append({'score': score, 'participant':participant})
+
+        return ctx
+
+def save_score(request):
+    if request.method == 'POST' and request.POST.get('item', False):
+        item = Item.objects.get(pk=request.POST.get('item', False))
+        for p in item.participant_set.all():
+            try:
+                score = p.score_set.get(scored_by=request.user)
+                score.mark = request.POST.get('mark'+str(p.code), 0)
+                score.save()
+            except ObjectDoesNotExist:
+                score = p.score_set.create(scored_by=request.user, mark = request.POST.get('mark'+str(p.code), 0), is_student=False)
+                score.save()
+        messages.success(request, 'Saved Successfully')
+        return HttpResponseRedirect('/score/'+str(item.id))

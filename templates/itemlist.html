@@ -9,7 +9,7 @@
 <script type="text/javascript" src="{% static 'jrating/jRating.jquery.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".rating.disabled").jRating({isDisabled:true});
+    $(".rating.disabled").jRating({nbRates : 10,step: true, length: 10, rateMax:10, isDisabled:true});
     $(".rating.enabled").jRating({nbRates : 10,step: true, length: 10, rateMax:10});
     $(".confirm_rating").click(function(){
       $.post(
@@ -51,10 +51,10 @@ $(document).ready(function(){
       </div>
       {% endfor %}
     </div>
-    {% if not user.student.is_rating_confirmed %}
-    <a class="btn btn-danger" href="{% url 'confirm_rating' %}">Confirm Rating</a>
-    {% endif %}
   </div>
 </section>
 {% endfor %}
+{% if not user.student.is_rating_confirmed %}
+<a class="btn btn-danger" href="{% url 'confirm_rating' %}">Confirm Rating</a>
+{% endif %}
 {% endblock %}
