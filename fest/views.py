@@ -104,11 +104,17 @@ def home(request, template_name='index.html', authentication_form=Authentication
         # generating result based student rating
         student_result = []
         mark = -1
+        experts_mark = -1
+        previous_result = ''
         rank = 0
-        for result in Result.objects.filter(participant__item=item).order_by('-student_score'):
-            if mark != result.score:
+        for result in Result.objects.filter(participant__item=item).order_by('-student_score', '-experts_score'):
+            if mark != result.student_score:
                 rank += 1
-                mark = result.score
+                mark = result.student_score
+                experts_mark = result.experts_score
+            if mark == result.student_score:
+                if experts_mark > result.experts_score:
+                    rank += 1
             student_result.append({'result':result, 'rank': rank})
         results.append({'common_result': common_result, 'item':item,
             'student_result': student_result})
@@ -148,12 +154,13 @@ def result_action(request):
                 if student_mark == None:
                     student_mark = 0
                 else:
-                    student_mark = int(round(student_mark))
+                    student_mark *= 2.5
                 if jury_mark == None:
                     jury_mark = 0
                 else:
-                    jury_mark = int(round(jury_mark))
-                Result.objects.create(participant=participant, score=student_mark+jury_mark, student_score=student_mark)
+                    jury_mark *= .75
+                Result.objects.create(participant=participant, score=student_mark+jury_mark, student_score=student_mark,
+                    experts_score=jury_mark)
             item.is_confirmed = True
             item.save()
             return HttpResponse('success')
@@ -223,7 +230,7 @@ class ItemDetailView(DetailView):
                 students_scored = scores.filter(is_student=True).count()
 
             ctx['participants'].append({'participant': participant, 'jury_score':jury_score, 'jury_mark': jury_mark, 'students_mark': students_mark,
-                'jury_scored': jury_scored, 'students_scored': students_scored})
+                                        'jury_scored': jury_scored, 'students_scored': students_scored, 'total': jury_mark+students_mark})
 
         return ctx
 
@@ -268,3 +275,8 @@ def save_score(request):
                 score.save()
         messages.success(request, 'Saved Successfully')
         return HttpResponseRedirect('/score/'+str(item.id))
+
+class SpecialAwardListView(ListView):
+    model = SpecialAward
+    template_name = 'special_awards.html'
+    context_object_name = 'awards'

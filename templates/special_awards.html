@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static from staticfiles %}
+
+{% block content %}
+<section class="main" role="main">
+  <div class="container">
+    {% for a in awards %}
+    <div class="alert alert-info"><h4>{{ a.title }}</h4>
+        <p>{{ a.participant.student.user.get_full_name }}</p>
+        <p>Item : {{ a.participant.item }}</p>
+        <p>code : #{{ a.participant.code }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

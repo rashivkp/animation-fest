@@ -53,6 +53,7 @@ $(document).ready(function(){
             <th>Code</th>
             <th>Experts Rating</th>
             <th>Students Rating</th>
+            <th>Total</th>
             {% for jury in item.jury_set.all %}
               <th>J{{ forloop.counter0|add:'1' }}</th>
             {% endfor %}
@@ -63,6 +64,7 @@ $(document).ready(function(){
             <td>{{ s.participant.code }}</td>
             <td>{{ s.jury_mark }}</td>
             <td>{{ s.students_mark }}</td>
+            <td>{{ s.total }}</td>
             {% for mark in s.jury_score %}
               {% if mark == '' %}
               <td>&nbsp;</td>

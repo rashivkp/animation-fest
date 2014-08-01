@@ -36,6 +36,9 @@ class Participant(models.Model):
     student = models.ForeignKey(Student)
     code = models.IntegerField()
 
+    def __unicode__(self):
+        return "%s #%s" % (self.item, self.code)
+
 class Jury(models.Model):
     user = models.OneToOneField(User)
     bio = models.TextField(blank=True, null=True)
@@ -64,8 +67,12 @@ class Result(models.Model):
     participant = models.ForeignKey(Participant)
     score = models.FloatField()
     student_score = models.FloatField(default=0)
+    experts_score = models.FloatField(default=0)
 
 class SpecialAward(models.Model):
     participant = models.ForeignKey(Participant)
     title = models.CharField(max_length=64)
     comment = models.TextField(null=True, blank=True)
+
+    def __unicode__(self):
+        return "%s-%s" % (self.title, self.participant)

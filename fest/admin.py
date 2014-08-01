@@ -8,6 +8,7 @@ admin.site.register(Participant)
 admin.site.register(Score)
 admin.site.register(Result)
 admin.site.register(Item)
+admin.site.register(SpecialAward)
 
 class StudentForm(forms.ModelForm):
     first_name = forms.CharField(max_length=32, required=False)
