@@ -38,6 +38,8 @@ class Participant(models.Model):
 
     def __unicode__(self):
         return "%s #%s" % (self.item, self.code)
+    class Meta:
+        unique_together = (('item', 'code'), ('student', 'code'))
 
 class Jury(models.Model):
     user = models.OneToOneField(User)
