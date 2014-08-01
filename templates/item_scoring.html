@@ -9,6 +9,11 @@
         <input type="hidden" value="{{item.id}}" name="item">
         {% csrf_token %}
         <table class="table">
+            <tr>
+                <th>Code</th>
+                <th>Mark</th>
+                <th>Out of 75</th>
+            </tr>
             {% for participant in participants %}
             <tr>
                 <td>#{{ participant.participant.code }}</td>
@@ -17,6 +22,7 @@
                 {% else %}
                 <td><input type="text" class="input" value="{{ participant.score.mark }}" name="mark{{ participant.participant.code }}"></td>
                 {% endif %}
+                <td>{{ participant.outof75 }}</td>
             </tr>
             {% endfor %}
         </table>

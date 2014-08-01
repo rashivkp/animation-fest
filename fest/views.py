@@ -241,17 +241,19 @@ class ItemDetailScoreView(DetailView):
         for participant in item.participant_set.all():
             try:
                 score = participant.score_set.get(scored_by=self.request.user)
+                outof75 = score.mark * .75
             except ObjectDoesNotExist:
                 score = 0
-            ctx['participants'].append({'score': score, 'participant':participant})
+                outof75 = 0
+            ctx['participants'].append({'score': score, 'participant':participant, 'outof75': outof75})
 
         return ctx
 
 def save_score(request):
     if request.method == 'POST' and request.POST.get('item', False):
         item = Item.objects.get(pk=request.POST.get('item', False))
-        if not item.jury_set.filter(user=request.user).count():
-            messages.warning(request, 'You are not authorized')
+        if not item.jury_set.filter(user=request.user).count() or item.is_confirmed:
+            messages.warning(request, 'You are not authorized or the item is confirmed')
             return HttpResponseRedirect('/score/'+str(item.id))
 
         for p in item.participant_set.all():
